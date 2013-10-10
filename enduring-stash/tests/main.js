@@ -1,12 +1,16 @@
 ﻿
 "use strict";
 require.config({
+   baseUrl: '../src',
    paths: {
       'QUnit': '../lib/qunit/qunit-1.12.0',
       'QPromises': '../lib/qunit/qunit.promises',
-      'enduring': '../dist/enduring-stash',
-      'story': '../src/story',
-      'Q': '../lib/q/q'
+      'Q': '../lib/q/q',
+
+      'enduring': '../src/enduring-stash',
+      'Stash': '../src/Stash',
+      'WebStorage': '../src/WebStorage.provider',
+      'Memory': '../src/Memory.provider'
    },
    shim: {
       'QUnit': {
@@ -22,28 +26,22 @@ require.config({
       },
       'Q': {
          exports: 'Q',
-      },
-      'story': {
-         exports: 'story'
-}
+      }
    }
 });
 // require the unit tests.
 require(
-    ['QUnit', 'localstorage', 'indexedDB'],
-    function (qunit, localstorage, indexedDB) {
+    ['QUnit',
+       '../tests/WebStorage.tests',
+       '../tests/Memory.tests',
+       '../tests/Cookie.tests',
+       '../tests/IndexedDB.tests'],
+    function (QUnit, webStorage, memoryStorage, cookieStorage, indexedDB) {
 
-       var tests = [];
-       tests.push(localstorage);
-       tests.push(indexedDB);
-
-       // configure and run the tests
-      for (var i = 0; i < tests.length; i++) {
-          var test = tests[i];
-          test.testStorage = true;
-          test.testRetrieval = true;
-          test.run();
-       }
+       //webStorage.run();
+       //memoryStorage.run();
+       //cookieStorage.run();
+       indexedDB.run();
 
        // start QUnit.
        QUnit.load();

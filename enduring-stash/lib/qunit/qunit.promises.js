@@ -29,9 +29,8 @@
       // resolved promises
       will: function (promise, message, callback) {
          var always = verifyPromise(promise);
-
          QUnit.stop();
-         promise.then(function () {
+         promise.then(function (actual) {
             QUnit.push(true, undefined, undefined, message);
             callback(actual);
          }, function () {
