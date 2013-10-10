@@ -65,7 +65,12 @@
     <Content Include="app\WebSQL.provider.js" />
     <Content Include="app\WebStorage.provider.js" />
     <Content Include="demo.js" />
-    <Content Include="dist\all.js" />
+    <Content Include="dist\Cookie.provider.min.js" />
+    <Content Include="dist\enduring-stash.min.js" />
+    <Content Include="dist\IndexedDB.provider.min.js" />
+    <Content Include="dist\Memory.provider.min.js" />
+    <Content Include="dist\WebSQL.provider.min.js" />
+    <Content Include="dist\WebStorage.provider.min.js" />
     <Content Include="index.html" />
     <Content Include="lib\jquery\jquery.min.js" />
     <Content Include="lib\qunit\qunit-1.12.0.css" />

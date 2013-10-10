@@ -4,16 +4,17 @@
 */
 
 window.enduring = (function () {
+   "use strict";
 
    var Q = window.Q || undefined;
    var $ = window.jQuery || undefined;
    var JSON = window.JSON || undefined;
 
    // Stash requires a promise framework 
-   if (!Q && !jQuery) throw 'Enduring Stash: Promise library unavailable! Include https://github.com/kriskowal/q/blob/master/q.js to fix.'
+   if (!Q && !jQuery) throw 'Enduring Stash: Promise library unavailable! Include https://github.com/kriskowal/q/blob/master/q.js to fix.';
 
    // Stash requires json 
-   if (!JSON) throw 'Enduring Stash: JSON unavailable! Include http://www.json.org/json2.js to fix.'
+   if (!JSON) throw 'Enduring Stash: JSON unavailable! Include http://www.json.org/json2.js to fix.';
 
 
 
@@ -44,7 +45,7 @@ window.enduring = (function () {
          var deferred = Q ? Q.defer() : $.Deferred();
          callback(deferred);
          return Q ? deferred.promise : deferred.promise();
-      }
+      };
 
       // individual methods
       var get = function (key) {
@@ -108,8 +109,7 @@ window.enduring = (function () {
    // must be instantiated with a provider
 
    var provider = (function () {
-      "use strict";
-
+      
       var providers = [];
       var namedProviders = {};
 
@@ -145,13 +145,13 @@ window.enduring = (function () {
             }
          }
          return true;
-      }
+      };
 
 
       // Returns whether there are any supported providers
       var hasProvider = function () {
          return providers.length > 0;
-      }
+      };
 
       // Returns the first provider that registered that it works
       var getProvider = function () {
@@ -161,7 +161,7 @@ window.enduring = (function () {
          } else {
             return undefined;
          }
-      }
+      };
 
       // Returns a specific provider when multiple are available
       // Mostly for testing
@@ -172,13 +172,13 @@ window.enduring = (function () {
          } else {
             return null;
          }
-      }
+      };
 
       // The methods below are attached to any registered providers.
       // Returns whether a constructor is the constructor of a value
-      var isType = function (Ctor, val) {
-         return val !== undefined && val !== null && val.constructor === Ctor;
-      }
+      var isType = function (Ctor, value) {
+         return value !== undefined && value !== null && value.constructor === Ctor;
+      };
 
       // Returns a safely quoted string
       var quoteStr = function (str) {
@@ -190,50 +190,52 @@ window.enduring = (function () {
          .replace(/\r/g, '\\r')
          .replace(/\t/g, '\\t') +
          "'";
-      }
+      };
 
 
       // Returns a string version of JavaScript
-      var stringify = function (val) {
+      var stringify = function (value) {
 
-         if (isType(Date, val)) {
-            return 'new Date(' + val.getTime() + ')';
+         if (isType(Date, value)) {
+            return 'new Date(' + value.getTime() + ')';
          }
 
-         if (isType(Array, val)) {
-            var values = [];
-            for (var i = 0; i < val.length; i++) {
-               values.push(stringify(val[i]));
+         if (isType(Array, value)) {
+            var arrayValues = [];
+            for (var i = 0; i < value.length; i++) {
+               arrayValues.push(stringify(value[i]));
             }
-            return '[' + values.join(',') + ']';
+            return '[' + arrayValues.join(',') + ']';
          }
 
-         if (isType(Object, val)) {
-            var values = [];
-            for (var property in val) {
-               values.push(quoteStr(property) + ':' + stringify(val[property]));
+         if (isType(Object, value)) {
+            var objectValues = [];
+            for (var property in value) {
+               objectValues.push(quoteStr(property) + ':' + stringify(value[property]));
             }
-            return '{' + values.join(',') + '}';
+            return '{' + objectValues.join(',') + '}';
          }
 
          if (
-            isType(RegExp, val)
-          ) return String(val);
+            isType(RegExp, value)
+          ) return String(value);
 
-         return JSON.stringify(val);
-      }
+         return JSON.stringify(value);
+      };
 
       // Returns a JavaScript version of a string
+      // This isn't nice, but is the only way to get back date objects rather than
+      // JSON date strings
       var unstringify = function (str) {
          return new Function('return ' + str).apply();
-      }
+      };
 
       return {
          hasProvider: hasProvider,
          getProvider: getProvider,
          forceProvider: forceProvider,
          registerProvider: registerProvider
-      }
+      };
 
    })();
 
@@ -247,19 +249,20 @@ window.enduring = (function () {
          throw 'Enduring Stash: No storage providers available! Include at least one provider.';
       }
 
+      var thisProvider = null;
       if (providerName) {
-         var thisProvider = provider.forceProvider(providerName);
+         thisProvider = provider.forceProvider(providerName);
 
          if (!thisProvider) {
             throw "Cannot force use of " + providerName + " provider - it is not available";
          }
       } else {
-         var thisProvider = provider.getProvider();
+         thisProvider = provider.getProvider();
       }
 
       var stash = new Stash(collection, thisProvider);
-      return stash; 
-   }
+      return stash;
+   };
 
 
    var stashOf = function (collection, providerName) {
@@ -276,5 +279,5 @@ window.enduring = (function () {
       stash: stash,
       stashOf: stashOf,
       provider: provider
-   }
+   };
 })();

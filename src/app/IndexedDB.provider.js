@@ -1,5 +1,12 @@
-﻿define(['enduring'], function (enduring) {
+﻿
+(function () {
    "use strict";
+
+   var enduring = window.enduring || undefined;
+   if (!enduring) {
+      throw "Enduring Stash: Enduring Stash is missing!";
+   }
+
 
 /*   var defaultDBName = "_stash_idb_";
    var indexeddb = window.indexedDB || window.msIndexedDB;
@@ -252,4 +259,4 @@
    return IDBStorage;
    */
 
-});
+})();

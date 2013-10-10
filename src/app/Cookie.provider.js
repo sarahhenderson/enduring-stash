@@ -1,5 +1,10 @@
-﻿"use strict";
-(function () {
+﻿(function () {
+   "use strict";
+
+   var enduring = window.enduring || undefined;
+   if (!enduring) {
+      throw "Enduring Stash: Enduring Stash is missing!";
+   }
 
    var Cookie = function () { };
 
@@ -69,7 +74,11 @@
    Cookie.prototype.contains = function (key, promise) {
 
       var match = document.cookie.match('(^|;) ?' + key + '=([^;]*)(;|$)');
-      match ? promise.resolve(true) : promise.resolve(false);
+      if (match) {
+         promise.resolve(true);
+      } else {
+         promise.resolve(false);
+      }
 
    };
    Cookie.prototype.removeAll = function (promise) {
@@ -77,7 +86,6 @@
       try{
          var pairs = document.cookie.split(';');
          var len = pairs.length;
-         var cookies = [];
          for (var i = 0; i < len; i++) {
             var pair = pairs[i].split('=');
             var expiry = new Date();

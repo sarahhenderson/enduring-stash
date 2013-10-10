@@ -1,7 +1,7 @@
-﻿"use strict";
-define(
+﻿define(
     ['../tests/provider.tests', 'IndexedDB.provider'],
     function (tests, provider) {
+       "use strict";
 
        var run = function () {
           console.log(provider);
@@ -11,7 +11,7 @@ define(
 
        return {
           run: run
-       }
+       };
 
     }
 );

@@ -1,6 +1,11 @@
-﻿"use strict";
+﻿(function () {
+   "use strict";
 
-(function () {
+   var enduring = window.enduring || undefined;
+   if (!enduring) {
+      throw "Enduring Stash: Enduring Stash is missing!";
+   }
+
    var LocalStorage = function () {
       this.storage = window.localStorage;
    };
@@ -37,7 +42,7 @@
             promise.reject(e);
          }
       }
-   }
+   };
 
    LocalStorage.prototype.getAll = function (key, promise) {
       try {

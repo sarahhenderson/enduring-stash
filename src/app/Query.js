@@ -1,5 +1,7 @@
-﻿define(function () {
+﻿(function () {
    "use strict";
+
+   var story = window.story || {};
 
    var Query = (function () {
       function Query() {
@@ -113,4 +115,4 @@
 
 
 
-});
+})();

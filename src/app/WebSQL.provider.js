@@ -1,5 +1,10 @@
-﻿define(['enduring'], function (enduring) {
+﻿(function () {
    "use strict";
+
+   var enduring = window.enduring || undefined;
+   if (!enduring) {
+      throw "Enduring Stash: Enduring Stash is missing!";
+   }
 
    var WebSQLStorage = function () {
       this.storage = {};
@@ -13,8 +18,8 @@
 
       var items = [];
       for (var itemKey in this.storage) {
-         if (this.storage.hasOwnProperty(itemKey)
-            && itemKey.substring(0, key.length) === key) {
+         if (this.storage.hasOwnProperty(itemKey) &&
+             itemKey.substring(0, key.length) === key) {
             items.push(this.storage[itemKey]);
          }
       }
@@ -77,4 +82,4 @@
    return WebSQLStorage;
 
 
-});
+})();

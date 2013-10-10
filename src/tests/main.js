@@ -1,17 +1,17 @@
 ﻿"use strict";
 require.config({
-   baseUrl: '../app',
+   baseUrl: '../dist',
    paths: {
       'QUnit': '../lib/qunit/qunit-1.12.0',
       'QPromises': '../lib/qunit/qunit.promises',
       'Q': '../lib/q/q',
 
-      'enduring': '../app/enduring',
+      'enduring': 'enduring-stash.min',
 
-      'WebStorage.provider': 'WebStorage.provider',
-      'CookieStorage.provider': 'Cookie.provider',
-      'IndexedDB.provider': 'IndexedDb.provider',
-      'Memory.provider': 'Memory.provider'
+      'WebStorage.provider': 'WebStorage.provider.min',
+      'Cookie.provider': 'Cookie.provider.min',
+      'IndexedDB.provider': 'IndexedDb.provider.min',
+      'Memory.provider': 'Memory.provider.min'
 },
    shim: {
       'QUnit': {

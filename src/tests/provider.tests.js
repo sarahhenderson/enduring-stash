@@ -1,7 +1,7 @@
-﻿"use strict";
-define(
+﻿define(
     ['QUnit', 'QPromises', 'enduring'],
     function (QUnit, QPromises, enduring) {
+       "use strict";
 
        var stash = null;
        var provider = '';
@@ -14,13 +14,13 @@ define(
           provider = providerName;
 
           test("enduring stash can be created using " + name, function () {
-             ok(stash);
+             QUnit.ok(stash);
           });
 
           runDataTypeTests();
           runAccessTests();
           runCollectionTests();
-       }
+       };
 
        var runCollectionTests = function () {
 
@@ -62,10 +62,10 @@ define(
           test("enduring stash doesn't retrieve items added to a different stash", function (assert) {
 
              var now = new Date().getTime();
-             var expected1 = { key: 'val' + now+Math.random(), value: 11 };
+             var expected1 = { key: 'val' + now + Math.random(), value: 11 };
              var expected2 = { key: 'val' + now + Math.random(), value: 22 };
              var expected3 = { key: 'val' + now + Math.random(), value: 33 };
-   
+
              assert.will(
              carStash.removeAll(),
              'stash is initially empty');
@@ -89,9 +89,9 @@ define(
                   assert.equal(value.length, 2, 'array contains correct number of items');
                   assert.ok(value.indexOf(expected1.value) > -1, 'first item is present');
                   assert.ok(value.indexOf(expected2.value) > -1, 'second item is present');
-                  assert.ok(value.indexOf(expected3.value) == -1, 'third item is not');
+                  assert.ok(value.indexOf(expected3.value) === -1, 'third item is not');
                });
-  
+
              assert.willEqual(
                carStash.contains(expected3.key),
                false, 'and the third item is not in our stash');
@@ -100,7 +100,7 @@ define(
           });
 
 
-       }
+       };
 
        var runAccessTests = function () {
 
@@ -360,7 +360,7 @@ define(
 
           });
 
-       }
+       };
 
        var runDataTypeTests = function () {
 
@@ -499,7 +499,7 @@ define(
                stash.get(expected.key),
                expected.value, 'get promise resolved',
                function (value) {
-                  assert.deepEqual(value, object, 'object is good!')
+                  assert.deepEqual(value, object, 'object is good!');
                   assert.strictEqual(value.name, object.name, 'string is the same');
                   assert.deepEqual(value.created, object.created, 'date is the same');
                   assert.strictEqual(value.isAwesome, object.isAwesome, 'boolean is the same');
@@ -522,7 +522,7 @@ define(
                stash.get(expected.key),
                expected.value, 'get promise resolved',
                function (value) {
-                  assert.strictEqual(value[0], object[0], 'first item is the same')
+                  assert.strictEqual(value[0], object[0], 'first item is the same');
                   assert.strictEqual(value[1].name, object[1].name, 'second item string is the same');
                   assert.deepEqual(value[1].created, object[1].created, 'second item date is the same');
                });
@@ -531,7 +531,7 @@ define(
        };
        return {
           run: run
-       }
+       };
     }
 );
 

@@ -1,7 +1,7 @@
-﻿"use strict";
-define(
+﻿define(
     ['../tests/provider.tests', 'Memory.provider'],
     function (tests, provider) {
+       "use strict";
 
        var run = function () {
 
@@ -11,7 +11,7 @@ define(
 
        return {
           run: run
-       }
+       };
 
     }
 );
