@@ -14,6 +14,7 @@ x64/
 build/
 [Bb]in/
 [Oo]bj/
+src/dist/
 
 # Enable "build/" folder in the NuGet Packages folder since NuGet packages use it for MSBuild targets
 !packages/*/build/
@@ -117,6 +118,12 @@ ClientBin/
 *.[Pp]ublish.xml
 *.pfx
 *.publishsettings
+Web*.config
+
+# Solution and project files
+*.sln
+*.csproj
+*.csproj.user
 
 # RIA/Silverlight projects
 Generated_Code/
@@ -154,6 +161,8 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+
+# Specific to this project
 /node_modules
 /enduring-stash
 /src/dist
