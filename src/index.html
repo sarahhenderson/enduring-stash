@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Enduring Stash</title>
+  <script src="lib/jquery/jquery.min.js"></script>
+  <script src="lib/q/q.min.js"></script>
+  <script src="app/enduring.js"></script>
+  <script src="app/WebStorage.provider.js"></script>
+  <script src="app/Cookie.provider.js"></script>
+  <script src="demo.js"></script>
+</head>
+<body>
+   <h1>Enduring Stash</h1>
+   <h3>Simple promise-based client-side persistence that supports multiple storage providers. 
+      It Just Works(tm).</h3>
+   
+   <h2>Seriously?  Does the world really need another client-side persistence library?</h2>
+   <p>Probably not.  There are plenty of good ones out there. If nosql is your thing, try 
+      lawnchair.  Or story.js.  Or stash.js.  If you need something a bit more industrial-strength,
+      give JayData or Breeze.js a try.
+   </p>
+   <p>None of them quite did what I needed in a couple of projects, so I trawled through 
+      their source code and came up with something
+      that suited exactly what I needed.  Maybe it will work for you too.  Here is what I wanted:
+   </p>
+
+   <h4>Multiple providers</h4>
+   <p>Supports IndexedDB, LocalStorage, and the so-good-it-can't-be-declared-a-standard Sqlite/WebSQL.
+      There are also fallback providers of SessionStorage, Cookies and if all else fails, in memory.
+   </p>
+
+   <h4>Automatic provider selection</h4>
+   <p>Give it a list of providers you want to support, and it will choose the first one that is
+      available on that platform.
+   </p>
+
+   <h4>Minimal configuration</h4>
+   <p>In most projects, I've already got a model defined, either in my client side JavaScript or on
+      from the server. I don't want to have to declare a schema again to store data client-side.
+   </p>
+
+   <h4>Simple API</h4>
+   <p>There aren't many things you need to do with data.  You can save it, and you can retrieve it
+      and maybe you want to wipe it all.  I wanted to make that simple.  I chose to make everything
+      use key-value pairs, although the values can be almost anything.
+   </p>
+
+   <h4>Many data types</h4>
+   <p>Storing strings, numbers and booleans is easy, but I wanted to be able to store  arrays, dates 
+      and complex objects with many sub-properties, and (of course) get the data back in
+      the same format.  I didn't want to write a lot of code to parse or convert things as they came
+      back from storage.  I wanted the library to do this for me.
+   </p>
+
+   <h4>Promise-based</h4>
+   <p>To make things nice and uniform, I wanted to use promises for everything so I didn't have
+      to know or care whether I am using an asynchronous database operation or a synchronous memory save.
+      Promises also give an easy and standard method of error handling. I recommend Q.
+   </p>
+
+   <h4>Extensible</h4>
+   <p>Not really a requirement for me right now, but when the next new hot super cool client side
+      storage technology arrives, it should be easy to make a plugin for it.
+   </p>
+   
+   <h4>Extensible (really)</h4>
+   <p>Because it is asynchronous, I can easily write a provider that talks to a server as well, and the
+      API can be exactly the same.
+   </p>
+
+   <h4>Lightweight</h4>
+   <p>There is a small query interface</p>
+   <p>Provides a simple, standardised, promise-based UI for storing data on the client.  Available storage providers are:</p>
+      <ul>
+         <li>IndexedDB</li>
+         <li>WebStorage (both LocalStorage and SessionStorage)</li>
+         <li>Cookies</li>
+         <li>Memory</li>
+         <li>WebSQL (in progress)</li>
+       </ul>
+
+   <p><a href="tests/index.html">Run Unit Tests</a></p>
+
+   <h2>Getting Started</h2>
+   <ol>
+      <li>Include a promise framework.  Currently Q and jQuery are supported (I recommend Q).<br />
+         <code>&lt;script src=&quot;q.min.js&quot;&gt;&lt;/script&gt;</code></li>
+      <li>Include enduring-stash.js<br />
+         <code>&lt;script src=&quot;enduring-stash.min.js&quot;&gt;&lt;/script&gt;</code></li>
+      <li>Include the storage providers you want to use.&nbsp; Enduring Stash will select the first <em>supported</em> provider it finds, so the order matters.<br />
+         <code>&lt;script src=&quot;WebStorage.provider.js&quot;&gt;&lt;/script&gt;</code></li>
+   </ol>
+
+   <h2>Create a new Enduring Stash</h2>
+   <code>var settings = new enduring.stash();</code>
+
+   <h2>Create a new named Enduring Stash</h2>
+   <code>var people = new enduring.stashOf('people');</code>
+
+   <h2>Set a value</h2>
+   <code>settings.set("Username", "Sarah");</code>
+   <p><button id="try-set">Try it</button></p>
+   <p>Set adds a value if it doesn't exist, updates it if it does</p>
+   <h2>Get a value</h2>
+   <code>settings.get("Username")
+      .then(function(result) {
+         alert(result);
+      });
+   </code>
+   <p><button id="try-get">Try it</button></p>
+   <p>If you haven't set the value yet, the promise will be resolved, but the value will be undefined.
+      The promise will only be rejected if some error condition occurred.
+   </p>
+
+   <h2>Add a value</h2>
+   <p>Adds a value if it doesn't exist.  If an item with the same key already exists,
+      the promise is rejected.  (If you want an existing item updated without raising any fuss, 
+      use set instead.
+   </p>
+
+   <h2>Update a value</h2>
+   <p>Update a value if it already exists.  If there is no item with the same key already,
+      the promise is rejected.  (If you want a new item added in this situation without raising any fuss, 
+      use set instead.
+   </p>
+
+   <h2>GetAll</h2>
+   <p>Returns an array of ALL values in the stash.  Yeah, no querying.  Any querying you need to do
+      has to be done once the items are loaded into memory.   If you need something with more querying
+      capabilities, look into JayData or Breeze.js.
+   </p>
+
+   <h2>Contains</h2>
+   <p>Returns true or false indicating whether an item with that key exists or not.</p>
+
+   <h2>Remove</h2>
+   <p>Removes an item from the stash.</p>
+
+   <h2>RemoveAll</h2>
+   <p>Clears out everything in the stash.</p>
+
+
+</body>
+</html>

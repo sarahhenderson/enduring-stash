@@ -1,0 +1,34 @@
+{
+  "name": "enduring-stash",
+  "version": "0.1.0",
+  "description": "Simple cross-platform, promise-based, client-side data storage library that Just Works(TM)",
+  "main": "enduring-stash.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "qunit"
+  },
+  "repository": "",
+  "keywords": [
+    "persistance",
+    "storage",
+    "localStorage",
+    "webStorage",
+    "sessionStorage",
+    "indexedDB",
+    "WebSQL",
+    "SQLite",
+    "cookies",
+    "memory",
+    "promise"
+  ],
+  "author": "Sarah Henderson",
+  "license": "GPLv2",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-jshint": "~0.6.4",
+    "grunt-contrib-uglify": "~0.2.4"
+  }
+}
