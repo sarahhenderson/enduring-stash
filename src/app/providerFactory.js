@@ -1,13 +1,4 @@
-﻿/*!
-* provider.js v0.1
-*
-* Copyright (c) Sarah Henderson 2013. Some rights reserved.
-* Licensed under GPL Version 2.
-*
-* Date: Fri 11 Oct 2013 
-*/
-
-define(function () {
+﻿define(function () {
    "use strict";
 
    var providers = [];

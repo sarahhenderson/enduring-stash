@@ -1,9 +1,4 @@
-﻿/*!
-* Stash.js
-* (c) Sarah Henderson 2013
-*/
-
-define(['Q'], function (Q) {
+﻿define("Stash", ['Q'], function (Q) {
    "use strict";
 
    var Stash = function (name, provider) {

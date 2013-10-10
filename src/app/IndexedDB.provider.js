@@ -1,7 +1,7 @@
-﻿define(['providerFactory'], function (providerFactory) {
+﻿define(['enduring'], function (enduring) {
    "use strict";
 
-   var defaultDBName = "_stash_idb_";
+/*   var defaultDBName = "_stash_idb_";
    var indexeddb = window.indexedDB || window.msIndexedDB;
    var transaction = {
       READ_ONLY: "readonly",
@@ -245,11 +245,11 @@
 
 
    if (indexeddb) {
-      providerFactory.registerProvider("IndexedDB", IDBStorage);
+      enduring.provider.registerProvider("IndexedDB", IDBStorage);
    }
 
 
    return IDBStorage;
-
+   */
 
 });

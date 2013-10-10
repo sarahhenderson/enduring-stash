@@ -1,4 +1,4 @@
-﻿define(['providerFactory'], function (providerFactory) {
+﻿define(['enduring'], function (enduring) {
    "use strict";
 
    var MemoryStorage = function () {
@@ -72,7 +72,7 @@
 
    };
 
-   providerFactory.registerProvider("Memory", MemoryStorage);
+   enduring.provider.registerProvider("Memory", MemoryStorage);
 
    return MemoryStorage;
 

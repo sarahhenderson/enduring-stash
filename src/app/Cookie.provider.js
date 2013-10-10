@@ -1,9 +1,7 @@
-﻿define(['providerFactory'], function (providerFactory) {
-   "use strict";
+﻿"use strict";
+(function () {
 
-   var Cookie = function () {
-
-   };
+   var Cookie = function () { };
 
    Cookie.prototype.get = function (key, promise) {
 
@@ -92,9 +90,6 @@
       }
    };
 
-   providerFactory.registerProvider("Cookie", Cookie);
+   enduring.provider.registerProvider("Cookie", Cookie);
 
-   return Cookie;
-
-
-});
+})();

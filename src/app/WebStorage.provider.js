@@ -1,6 +1,6 @@
-﻿define(['providerFactory'], function (providerFactory) {
-   "use strict";
+﻿"use strict";
 
+(function () {
    var LocalStorage = function () {
       this.storage = window.localStorage;
    };
@@ -116,15 +116,13 @@
 
    if (window.localStorage) {
 
-      providerFactory.registerProvider("LocalStorage", LocalStorage);
+      enduring.provider.registerProvider("LocalStorage", LocalStorage);
       return LocalStorage;
 
    } else if (window.sessionStorage) {
 
       SessionStorage.prototype = LocalStorage.prototype;
-      providerFactory.registerProvider("SessionStorage", SessionStorage);
-      return SessionStorage;
-
+      enduring.provider.registerProvider("SessionStorage", SessionStorage);
    }
 
-});
+})();

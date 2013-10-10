@@ -1,4 +1,4 @@
-﻿define(['providerFactory'], function (providerFactory) {
+﻿define(['enduring'], function (enduring) {
    "use strict";
 
    var WebSQLStorage = function () {
@@ -72,7 +72,7 @@
 
    };
 
-   providerFactory.registerProvider("WebSQL", WebSQLStorage);
+   enduring.provider.registerProvider("WebSQL", WebSQLStorage);
 
    return WebSQLStorage;
 

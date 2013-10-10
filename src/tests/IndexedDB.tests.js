@@ -4,7 +4,7 @@ define(
     function (tests, provider) {
 
        var run = function () {
-
+          console.log(provider);
           tests.run("IndexedDB Storage", "IndexedDB");
 
        };
