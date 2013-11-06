@@ -105,27 +105,24 @@ window.enduring = (function () {
    });
 
 
-   // *** ProviderFactory ------------------------------------- 
-   // must be instantiated with a provider
-
-   var provider = (function () {
+   var providerFactory = (function () {
       
-      var providers = [];
+      var availableProviders = [];
       var namedProviders = {};
 
       // Allows providers to register themselves if their storage method is supported
       // parameters: name and constructor function for the provider
-      var registerProvider = function (name, Provider) {
+      var registerProvider = function (name, ProviderConstructor) {
 
-         if (providerIsValid(name, Provider)) {
+         if (providerIsValid(name, ProviderConstructor)) {
             // add necessary prototype methods to the provider
-            Provider.prototype.stringify = stringify;
-            Provider.prototype.unstringify = unstringify;
-            Provider.prototype.isType = isType;
-            Provider.prototype.quoteStr = quoteStr;
+            ProviderConstructor.prototype.stringify = stringify;
+            ProviderConstructor.prototype.unstringify = unstringify;
+            ProviderConstructor.prototype.isType = isType;
+            ProviderConstructor.prototype.quoteStr = quoteStr;
 
-            providers.push(Provider);
-            namedProviders[name] = Provider;
+            availableProviders.push(ProviderConstructor);
+            namedProviders[name] = ProviderConstructor;
          }
       };
 
@@ -150,13 +147,13 @@ window.enduring = (function () {
 
       // Returns whether there are any supported providers
       var hasProvider = function () {
-         return providers.length > 0;
+         return availableProviders.length > 0;
       };
 
-      // Returns the first provider that registered that it works
+      // Returns the first provider that registered 
       var getProvider = function () {
          if (hasProvider()) {
-            var Provider = providers[0];
+            var Provider = availaleProviders[0];
             return new Provider();
          } else {
             return undefined;
@@ -165,8 +162,8 @@ window.enduring = (function () {
 
       // Returns a specific provider when multiple are available
       // Mostly for testing
-      var forceProvider = function (name) {
-         var Provider = namedProviders[name] || undefined;
+      var forceProvider = function (providerName) {
+         var Provider = namedProviders[providerName] || undefined;
          if (Provider) {
             return new Provider();
          } else {
@@ -245,19 +242,19 @@ window.enduring = (function () {
 
    var createStash = function (collection, providerName) {
 
-      if (!provider.hasProvider()) {
+      if (!providerFactory.hasProvider()) {
          throw 'Enduring Stash: No storage providers available! Include at least one provider.';
       }
 
       var thisProvider = null;
       if (providerName) {
-         thisProvider = provider.forceProvider(providerName);
+         thisProvider = providerFactory.forceProvider(providerName);
 
          if (!thisProvider) {
             throw "Cannot force use of " + providerName + " provider - it is not available";
          }
       } else {
-         thisProvider = provider.getProvider();
+         thisProvider = providerFactory.getProvider();
       }
 
       var stash = new Stash(collection, thisProvider);
@@ -278,6 +275,6 @@ window.enduring = (function () {
    return { // public API
       stash: stash,
       stashOf: stashOf,
-      provider: provider
+      provider: providerFactory
    };
 })();

@@ -47,6 +47,22 @@ module.exports = function (grunt) {
                     ext: '.provider.min.js',   // Dest filepaths will have this extension.
                  },
             ],
+         },
+         
+         dev: {
+            options: { beautify: true, mangle: false },
+            files: [
+               {
+                  'src/dist/enduring-stash.min.js': ['src/app/enduring.js']
+               },
+               {
+                 expand: true,     // Enable dynamic expansion.
+                 cwd: 'src/app',      // Src matches are relative to this path.
+                 src: ['*.provider.js'], // Actual pattern(s) to match.
+                 dest: 'src/dist/',   // Destination path prefix.
+                 ext: '.provider.min.js',   // Dest filepaths will have this extension.
+               },
+            ],
          }
       },
 
@@ -56,12 +72,23 @@ module.exports = function (grunt) {
               {
                  expand: true,
                  cwd: 'src/dist',
-                 src: ['*.js'],
+                 src: ['*.js', '!*.min.js'],
                  dest: 'enduring-stash/',
                  filter: 'isFile'
               }]
          }
-      }
+      },
+      
+      watch: {
+         js: {
+            files: 'src/app/*.js',
+            tasks: ['jshint', 'uglify:dev', 'copy'],
+            options: {
+               livereload: true,
+            },
+         },
+      },
+      
 
 
    });
@@ -69,5 +96,9 @@ module.exports = function (grunt) {
    grunt.loadNpmTasks('grunt-contrib-jshint');
    grunt.loadNpmTasks('grunt-contrib-uglify');
    grunt.loadNpmTasks('grunt-contrib-copy');
+   grunt.loadNpmTasks('grunt-contrib-watch');
+   
    grunt.registerTask('default', ['jshint', 'uglify', 'copy']);
+   grunt.registerTask('dev', ['watch']);
+
 };

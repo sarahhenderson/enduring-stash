@@ -8,7 +8,7 @@
 
    var MemoryStorage = function () {
       this.storage = {};
-   };
+   }; 
 
    MemoryStorage.prototype.get = function (key, promise) {
       promise.resolve(this.storage[key]);

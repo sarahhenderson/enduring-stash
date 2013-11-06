@@ -11,6 +11,7 @@ require.config({
       'WebStorage.provider': 'WebStorage.provider.min',
       'Cookie.provider': 'Cookie.provider.min',
       'IndexedDB.provider': 'IndexedDb.provider.min',
+      'WebSQL.provider': 'WebSQL.provider.min',
       'Memory.provider': 'Memory.provider.min'
 },
    shim: {
@@ -34,6 +35,7 @@ require.config({
       },
       'WebStorage.provider': { deps: ['enduring']},
       'Cookie.provider': { deps: ['enduring']},
+      'WebSQL.provider': { deps: ['enduring']},
       'IndexedDB.provider': { deps: ['enduring']},
       'Memory.provider': { deps: ['enduring']}
 
@@ -45,13 +47,15 @@ require(
        '../tests/WebStorage.tests',
        '../tests/Memory.tests',
        '../tests/Cookie.tests',
+       '../tests/WebSQL.tests',
        '../tests/IndexedDB.tests'],
-    function (QUnit, webStorage, memoryStorage, cookieStorage, indexedDB) {
+    function (QUnit, webStorage, memoryStorage, cookieStorage, webSQL, indexedDB) {
 
-       webStorage.run();
        memoryStorage.run();
+       webSQL.run();
+       webStorage.run();
        cookieStorage.run();
-//       indexedDB.run();
+       indexedDB.run();
 
        // start QUnit.
        QUnit.load();

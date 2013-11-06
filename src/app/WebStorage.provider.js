@@ -128,6 +128,7 @@
 
       SessionStorage.prototype = LocalStorage.prototype;
       enduring.provider.registerProvider("SessionStorage", SessionStorage);
+      return LocalStorage;
    }
 
 })();
