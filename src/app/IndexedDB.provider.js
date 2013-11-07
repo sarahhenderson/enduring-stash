@@ -12,11 +12,13 @@
    var IDBStorage = function () {
       var self = this;
 
+      var defer = Q ? Q.defer() : $.Deferred();
       this.stashName = "stash";
       this.READ_ONLY = "readonly";
       this.READ_WRITE = "readwrite";
 
-      indexedDB.onerror = function (error) { console.error(error); };
+
+      indexedDB.onerror = function (error) { defer.reject(); console.error(error); };
 
       var request = indexedDB.open("enduringStash", "1");
 
@@ -26,199 +28,167 @@
          if (!self.storage.objectStoreNames.contains(self.stashName)) {
             self.storage.createObjectStore(self.stashName);
          }
+         defer.resolve();
       };
 
       request.onsuccess = function (e) {
          self.storage = e.target.result;
+         defer.resolve();
       };
 
       request.onfailure = indexedDB.onerror;
+
+      this.ready = Q ? defer.promise : defer.promise();
    };
 
    IDBStorage.prototype.getTransaction = function (mode, promise) {
-      var trans = this.storage.transaction([this.stashName], mode);
+      var self = this;
+      var defer = Q ? Q.defer() : $.Deferred();
+      this.ready.then(function () {
+         var trans = self.storage.transaction([self.stashName], mode);
 
-      trans.onabort = function (e) { promise.reject(e); };
-      trans.onerror = trans.onabort;
-      trans.store = trans.objectStore(this.stashName);
-
-      return trans;
+         trans.onabort = function (e) { promise.reject(e); };
+         trans.onerror = trans.onabort;
+         trans.store = trans.objectStore(self.stashName);
+         defer.resolve(trans);
+      });
+      return Q ? defer.promise : defer.promise();
    };
+
 
 
    IDBStorage.prototype.get = function (key, promise) {
       var self = this;
-      var trans = this.getTransaction(this.READ_ONLY);
-
-      trans.oncomplete = function (result) {
-         console.log(result);
-         promise.resolve(5);//self.unstringify(value));
-      };
-
-      trans.store.get(key);
-
-      //openTransaction(this, transaction.READ_WRITE).then(function (options) {
-      //   var values = [];
-      //   options.trans.onerror = function (e) {
-      //      promise.reject(e);
-      //   };
-      //   options.trans.oncomplete = function () {
-      //      promise.resolve({
-      //         key: key,
-      //         value: values
-      //      });
-      //   };
-      //   var objectStore = options.trans.objectStore(options.name);
-      //   var request = objectStore.get(key);
-      //   request.onsuccess = function (event) {
-      //      values.push(event.target.result);
-      //   };
-      //}, function (e) {
-      //   promise.reject(e);
-      //});
-
-   };
-
-   IDBStorage.prototype.getAll = function (key, promise) {
-      promise.resolve([]);
-      openTransaction(this, transaction.READ_WRITE).then(function (options) {
-         var items = [];
-         options.trans.oncomplete = function (evt) {
-            promise.resolve(items);
+      this.getTransaction(this.READ_ONLY, promise).then(function (trans) {
+         var request = trans.store.get(key);
+         request.onerror = function (event) {
+            promise.reject(request.error);
          };
-         var objectStore = options.trans.objectStore(options.name);
-         var request = objectStore.openCursor();
-         request.onerror = function (e) {
-            promise.reject(e);
+         request.onsuccess = function (event) {
+            promise.resolve(self.unstringify(request.result));
          };
-         request.onsuccess = function (evt) {
-            var cursor = evt.target.result;
-            if (cursor) {
-               items.push(cursor.value);
-               cursor["continue"]();
-            }
-         };
-      }, function (e) {
-         promise.reject(e);
       });
-
    };
 
-   IDBStorage.prototype.set = function (key, value, promise) {
-      promise.resolve(key);
-      var trans = this.storage.transaction([this.stashName], this.READ_WRITE);
+   IDBStorage.prototype.getAll = function (keyPrefix, promise) {
+      var self = this;
+      var items = [];
+      this.getTransaction(this.READ_WRITE, promise).then(function (trans) {
 
-      trans.onabort = function (e) {
-         promise.reject(e);
-      };
-      trans.onerror = trans.onabort;
-      trans.oncomplete = function (result) {
-         promise.resolve(value);
-      };
-      
-      var store = trans.objectStore(this.stashName);
-      store.add(this.stringify(value), key);
-   };
+         var request = trans.store.openCursor();
+         request.onerror = function (event) {
+            promise.reject(request.error);
+         };
 
-   IDBStorage.prototype.add = function (key, value, promise) {
-      promise.resolve(key);
-      openTransaction(this, transaction.READ_WRITE).then(function (options) {
-         options.trans.onabort = function (e) {
-            promise.reject(e);
-         };
-         options.trans.oncomplete = function () {
-            promise.resolve({
-               key: key,
-               value: value
-            });
-         };
-         options.trans.objectStore(options.name).add(value, key);
-      }, function (e) {
-         if (e.code === 11) {
-            e = {
-               name: "QUOTA_EXCEEDED_ERR",
-               error: e
-            };
-         }
-         promise.reject(e);
-      });
-
-   };
-   IDBStorage.prototype.update = function (key, value, promise) {
-      promise.resolve(key);
-      openTransaction(this, transaction.READ_WRITE).then(function (options) {
-         options.trans.onabort = function (e) {
-            promise.reject(e);
-         };
-         options.trans.oncomplete = function () {
-            promise.resolve({
-               key: key,
-               value: value
-            });
-         };
-         var request = options.trans.objectStore(options.name).openCursor(key);
-         request.pair = {
-            key: key,
-            value: value
-         };
          request.onsuccess = function (event) {
             var cursor = event.target.result;
             if (cursor) {
-               cursor.update(event.target.pair.value);
+               items.push(self.unstringify(cursor.value));
+               cursor.continue();
             } else {
-               options.trans.abort();
+               promise.resolve(items);
             }
          };
-      }, function (e) {
-         promise.reject(e);
       });
-
    };
+
+   IDBStorage.prototype.set = function (key, value, promise) {
+      var self = this;
+      this.getTransaction(this.READ_WRITE, promise).then(function (trans) {
+         var request = trans.store.get(key);
+         request.onerror = function (event) {
+            promise.reject(request.error);
+         };
+         request.onsuccess = function (event) {
+            if (request.result) {
+               self.update(key, value, promise);
+            } else {
+               self.add(key, value, promise);
+            }
+         };
+      });
+   };
+
+   IDBStorage.prototype.add = function (key, value, promise) {
+      var self = this;
+      this.getTransaction(self.READ_WRITE, promise).then(function (trans) {
+         var request = trans.store.add(self.stringify(value), key);
+         request.onerror = function (event) {
+            promise.reject(request.error);
+         };
+         request.onsuccess = function (event) {
+            promise.resolve(value);
+         };
+      });
+   };
+
+   IDBStorage.prototype.update = function (key, value, promise) {
+      var self = this;
+      var defer = Q ? Q.defer() : $.Deferred();
+      self.contains(key, defer);
+      var checkedIfExists = Q ? defer.promise : defer.promise();
+
+      checkedIfExists.then(function (contains) {
+         if (!contains) {
+            promise.reject("Item already exists");
+         } else {
+
+            self.getTransaction(self.READ_WRITE, promise).then(function (trans) {
+               var request = trans.store.put(self.stringify(value), key);
+               request.onerror = function (event) {
+                  promise.reject(request.error);
+               };
+               request.onsuccess = function (event) {
+                  promise.resolve(value);
+               };
+            });
+         }
+      });
+   };
+
    IDBStorage.prototype.remove = function (key, promise) {
-      promise.resolve(key);
-      openTransaction(this, transaction.READ_WRITE).then(function (options) {
-         options.trans.onerror = function (e) {
-            promise.reject(e);
+      var self = this;
+      self.getTransaction(self.READ_WRITE, promise).then(function (trans) {
+         var request = trans.store.delete(key);
+         request.onerror = function (event) {
+            promise.reject(request.error);
          };
-         options.trans.oncomplete = function () {
+         request.onsuccess = function (event) {
             promise.resolve();
          };
-         var objectStore = options.trans.objectStore(options.name);
-         objectStore["delete"](key);
-      }, function (e) {
-         promise.reject(e);
       });
-
    };
+
    IDBStorage.prototype.contains = function (key, promise) {
-      promise.resolve(key);
-      openTransaction(this, transaction.READ_ONLY).then(function (options) {
-         var request = options.trans.objectStore(options.name).openCursor(IDBKeyRange.prototype.only(key));
-         options.trans.oncomplete = function () {
-            promise.resolve(request.result !== undefined);
-         };
-         options.trans.onerror = function (e) {
-            promise.reject(e);
-         };
-      }, function (e) {
-         promise.reject(e);
-      });
+      var self = this;
+      self.getTransaction(self.READ_ONLY, promise).then(function (trans) {
+         var request = trans.store.get(key);
 
-   };
-   IDBStorage.prototype.removeAll = function () {
-      promise.resolve();
-      openTransaction(this, transaction.READ_WRITE).then(function (options) {
-         options.trans.onerror = function (e) {
-            promise.reject(e);
+         request.onerror = function (event) {
+            promise.reject(request.error);
          };
-         options.trans.oncomplete = function () {
+
+         request.onsuccess = function (event) {
+            promise.resolve(!!request.result);
+         };
+      });
+   };
+
+   IDBStorage.prototype.removeAll = function (promise) {
+      var self = this;
+      self.getTransaction(self.READ_WRITE, promise).then(function (trans) {
+
+         var request = trans.store.clear();
+
+         request.onerror = function (event) {
+            promise.reject(request.error);
+         };
+
+         request.onsuccess = function (event) {
             promise.resolve();
          };
-         options.trans.objectStore(options.name).clear();
-      }, function (e) {
-         promise.reject(e);
-      });
 
+      });
    };
 
 

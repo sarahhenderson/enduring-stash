@@ -17,9 +17,9 @@
              QUnit.ok(stash);
           });
 
-          runDataTypeTests();
+          //runDataTypeTests();
           runAccessTests();
-          runCollectionTests();
+          //runCollectionTests();
        };
 
        var runCollectionTests = function () {
@@ -73,17 +73,17 @@
                'stash is initially empty');
 
              removeAll.then(function () {
-                assert.willDeepEqual(
-                   carStash.set(expected1.key, expected1.value),
-                   expected1.value, 'add one item to the stash');
+                setValue = carStash.set(expected1.key, expected1.value);
+                assert.willDeepEqual(setValue, expected1.value, 'add one item to the stash');
+                return setValue
              }).then(function () {
-                assert.willDeepEqual(
-                   carStash.set(expected2.key, expected2.value),
-                   expected2.value, 'and then another');
+                var setValue = carStash.set(expected2.key, expected2.value);
+                assert.willDeepEqual(setValue, expected2.value, 'and then another');
+                return setValue
              }).then(function () {
-                assert.willDeepEqual(
-                   peopleStash.set(expected3.key, expected3.value),
-                  expected3.value, 'add one item a different stash');
+                var setValue = peopleStash.set(expected3.key, expected3.value);
+                assert.willDeepEqual(setValue, expected3.value, 'add one item a different stash');
+                return setValue;
              }).then(function () {
                 assert.will(
                   carStash.getAll(),
@@ -130,11 +130,11 @@
              var expected2 = expected;
              expected2.value = 5;
 
-             var testPromise = stash.set(expected.key, expected.value);
-             assert.willDeepEqual(testPromise,
+             var setInitialValue = stash.set(expected.key, expected.value);
+             assert.willDeepEqual(setInitialValue,
                 expected.value, 'set promise fulfilled and returns key and value');
 
-             testPromise.then(function () {
+             setInitialValue.then(function () {
                 assert.willDeepEqual(
                    stash.set(expected.key, expected2.value),
                    expected.value, 'set promise fulfilled and returns key and value');
@@ -157,22 +157,23 @@
               );
           });
 
-          test("enduring stash 'getAll' promise is resolved with array of items", function (assert) {
+          test("enduring stash 'getAll' promise is resolved with array of items", 4, function (assert) {
+             var expected = { key: 'val' + (new Date()).getTime() + Math.random(), value: 5 };
+             var expectedArray = [];
+             var promises = [];
+             for (var i = 0; i < 10; i++) {
+                expectedArray.push(expected.value + i);
+                promises.push(stash.set(expected.key + i, expected.value + i));
+             }
 
              var removeAll = stash.removeAll();
+             promises.push(removeAll);
              assert.will(
                removeAll,
                'start by clearing everything');
 
-             removeAll.then(function () {
-                var expected = { key: 'val' + (new Date()).getTime() + Math.random(), value: 5 };
-                var expectedArray = [];
-                var promises = [];
-                for (var i = 0; i < 10; i++) {
-                   expectedArray.push(expected.value + i);
-                   promises.push(stash.set(expected.key + i, expected.value + i));
-                }
-             }).then(function () {
+
+             Q.allSettled(promises).then(function () {
                 assert.willDeepEqual(
                   stash.getAll(),
                   expectedArray, 'getAll promise resolved',
@@ -313,21 +314,23 @@
               expected.value, 'item is added');
 
              addItem.then(function () {
-                assert.willEqual(
-                   stash.contains(expected.key),
-                   true, 'and contains returns true');
+                var contains = stash.contains(expected.key);
+                assert.willEqual(contains, true, 'and contains returns true');
+                return contains;
+
              }).then(function () {
-                assert.will(
-                   stash.remove(expected.key),
-                   'remove promise fulfilled');
+                var remove = stash.remove(expected.key);
+                assert.will(remove, 'remove promise fulfilled');
+                return remove;
+
              }).then(function () {
-                assert.willEqual(
-                   stash.contains(expected.key),
-                   false, 'and now contains is false');
+                var contains = stash.contains(expected.key);
+                assert.willEqual(contains, false, 'and now contains is false');
+                return contains;
+
              }).then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  undefined, 'and retrieving the item gives undefined');
+                var get = stash.get(expected.key);
+                assert.willDeepEqual(get, undefined, 'and retrieving the item gives undefined');
              });
           });
 
@@ -340,35 +343,39 @@
                 false, 'contains promise fulfilled and returns false before removal');
 
              startsEmpty.then(function () {
-                assert.will(
-                   stash.remove(expected.key),
-                   'remove promise fulfilled and returns false');
+                var remove = stash.remove(expected.key);
+                assert.will(remove, 'remove promise fulfilled and returns false');
+                return remove;
              }).then(function () {
                 assert.willEqual(
-                   stash.contains(expected.key),
-                   false, 'contains promise fulfilled and returns false after removal');
+                stash.contains(expected.key),
+                false, 'contains promise fulfilled and returns false after removal');
              });
           });
 
           test("enduring stash 'removeAll' removes all items", function (assert) {
              var expected = { key: 'val' + (new Date()).getTime(), value: 3.14 };
-             var expected2 = { key: 'val' + (new Date()).getTime(), value: 3.14 };
 
              var addItem = stash.set(expected.key, expected.value);
+
              assert.willDeepEqual(
                  addItem,
                  expected.value, 'item is added');
 
+
              addItem.then(function () {
-                console.log('removing all');
+                var removeAll = stash.removeAll();
                 assert.will(
-                   stash.removeAll(expected.key),
+                   removeAll,
                    'removeAll promise fulfilled');
+                return removeAll;
              }).then(function () {
                 assert.willEqual(
                    stash.contains(expected.key),
                    false, 'and now contains is false');
              });
+
+
           });
 
        };

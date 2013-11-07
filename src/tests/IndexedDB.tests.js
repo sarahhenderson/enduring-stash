@@ -4,9 +4,7 @@
        "use strict";
 
        var run = function () {
-          console.log(provider);
           tests.run("IndexedDB Storage", "IndexedDB");
-
        };
 
        return {
