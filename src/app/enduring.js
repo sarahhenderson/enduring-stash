@@ -153,7 +153,7 @@ window.enduring = (function () {
       // Returns the first provider that registered 
       var getProvider = function () {
          if (hasProvider()) {
-            var Provider = availaleProviders[0];
+            var Provider = availableProviders[0];
             return new Provider();
          } else {
             return undefined;
