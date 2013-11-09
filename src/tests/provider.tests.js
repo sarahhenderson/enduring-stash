@@ -1,542 +1,399 @@
-﻿define(
-    ['QUnit', 'QPromises', 'enduring'],
-    function (QUnit, QPromises, enduring) {
+﻿define(['QUnit', 'enduring'], function (QUnit, enduring) {
        "use strict";
 
-       var stash = null;
-       var provider = '';
+       var run = function (providerDisplayName, providerName) {
 
-       var run = function (name, providerName) {
+          module(providerDisplayName);
+          var stash = enduring.stashOf(name, providerName);
 
-          module(name);
-
-          stash = enduring.stashOf(name, providerName);
-          provider = providerName;
-
-          test("enduring stash can be created using " + name, function () {
+          test("enduring stash can be created using " + providerDisplayName, function () {
              QUnit.ok(stash);
           });
 
-          //runDataTypeTests();
-          runAccessTests();
-          //runCollectionTests();
+          runDataTypeTests(stash);
+          runAccessTests(stash);
+          runCollectionTests(stash, providerName);
        };
 
-       var runCollectionTests = function () {
+       var runCollectionTests = function (stash, providerName) {
+          
+          var peopleStash = enduring.stashOf('people', providerName);
+          var carStash = enduring.stashOf('cars', providerName);
 
-          var peopleStash = enduring.stashOf('people', provider);
-          var carStash = enduring.stashOf('cars', provider);
-
-          test("enduring stash with named collection can be created using Local Storage", function (assert) {
+          test("enduring stash with named collection can be created", function (assert) {
              ok(peopleStash);
           });
 
-          test("enduring stash doesn't retrieve items added to a different stash", function (assert) {
+          asyncTest("enduring stash get doesn't retrieve items added to a different stash", function (assert) {
+
+             var expected = { key: 'val', value: 3.14 };
+             var setup = carStash.set('val', expected.value);
+             setup.then(function () {
+
+                var test = peopleStash.get(expected.key);
+                test.then(function (actualValue) {
+                   assert.equal(undefined, actualValue, 'value should be undefined');
+                })
+                .finally(start);
+
+             }).fail(start);
+          });
+
+          asyncTest("enduring stash contains returns false for items added to a different stash", function (assert) {
 
              var expected = { key: 'val', value: 3.14 };
 
-             var setItem = carStash.set('val', expected.value);
-             assert.willDeepEqual(
-                setItem,
-                expected.value, 'value set in base stash');
+             var setup = carStash.set('val', expected.value);
+             setup.then(function () {
 
-             setItem.then(function () {
-                assert.willEqual(
-                  peopleStash.contains(expected.key),
-                  false, 'is not available in the named stash');
-             }).then(function () {
-                assert.willDeepEqual(
-                  peopleStash.get(expected.key),
-                  undefined, 'and cannot be retrieved');
-             }).then(function () {
-                assert.willEqual(
-                  carStash.contains(expected.key),
-                  true, 'but is available in the base stash');
-             }).then(function () {
-                assert.willDeepEqual(
-                  carStash.get(expected.key),
-                  expected.value, 'and can be retrieved');
-             });
+                var test = peopleStash.contains(expected.key);
+
+                test.then(function (actualValue) {
+                   assert.equal(false, actualValue, 'is not available in the named stash');
+                })
+                .finally(start);
+
+             }).fail(start);
 
           });
 
-          test("enduring stash doesn't retrieve items added to a different stash", function (assert) {
+          asyncTest("enduring stash getAll doesn't retrieve items added to a different stash", 4, function (assert) {
 
              var now = new Date().getTime();
              var expected1 = { key: 'val' + now + Math.random(), value: 11 };
              var expected2 = { key: 'val' + now + Math.random(), value: 22 };
              var expected3 = { key: 'val' + now + Math.random(), value: 33 };
 
-             var removeAll = carStash.removeAll();
-             assert.will(
-               removeAll,
-               'stash is initially empty');
-
-             removeAll.then(function () {
-                setValue = carStash.set(expected1.key, expected1.value);
-                assert.willDeepEqual(setValue, expected1.value, 'add one item to the stash');
-                return setValue
+             // first, do our setups
+             var setup = carStash.removeAll()
+             .then(function () {
+                return carStash.set(expected1.key, expected1.value);
              }).then(function () {
-                var setValue = carStash.set(expected2.key, expected2.value);
-                assert.willDeepEqual(setValue, expected2.value, 'and then another');
-                return setValue
+                return carStash.set(expected2.key, expected2.value);
              }).then(function () {
-                var setValue = peopleStash.set(expected3.key, expected3.value);
-                assert.willDeepEqual(setValue, expected3.value, 'add one item a different stash');
-                return setValue;
-             }).then(function () {
-                assert.will(
-                  carStash.getAll(),
-                  'and we should return just the items added to the first stash',
-                  function (value) {
-                     assert.equal(value.length, 2, 'array contains correct number of items');
-                     assert.ok(value.indexOf(expected1.value) > -1, 'first item is present');
-                     assert.ok(value.indexOf(expected2.value) > -1, 'second item is present');
-                     assert.ok(value.indexOf(expected3.value) === -1, 'third item is not');
-                  });
-             }).then(function () {
-                assert.willEqual(
-                  carStash.contains(expected3.key),
-                  false, 'and the third item is not in our stash');
+                return peopleStash.set(expected3.key, expected3.value);
              });
 
-          });
+             setup.then(function () {
 
+                var testMethod = carStash.getAll();
+                testMethod.then(function (value) {
+                   assert.equal(value.length, 2, 'array contains correct number of items');
+                   assert.ok(value.indexOf(expected1.value) > -1, 'first item is present');
+                   assert.ok(value.indexOf(expected2.value) > -1, 'second item is present');
+                   assert.ok(value.indexOf(expected3.value) === -1, 'third item should not be present');
+                })
+                .finally(start);
+
+             }).fail(function (error) { console.error(error); });
+          });
        };
 
-       var runAccessTests = function () {
+       var runAccessTests = function (stash) {
 
-          test("enduring stash 'set' adds a value if one doesn't exist", function (assert) {
+          asyncTest("enduring stash 'set' adds a value if one doesn't exist", 2, function (assert) {
+
+
+             console.log('another test, stash is ');
+             console.log(stash);
+
              var expected = { key: 'val' + (new Date()).getTime(), value: 3.14 };
-             var testPromise = stash.set(expected.key, expected.value);
+             var test = stash.set(expected.key, expected.value);
 
-             assert.willDeepEqual(
-                testPromise,
-                expected.value, 'set promise fulfilled and returns key and value');
+             test.then(function () {
 
-             testPromise.then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected.value, 'get promise resolved',
-                  function (value) {
-                     ok(!isNaN(value), 'returns number');
-                  });
-             });
+                var verify = stash.get(expected.key);
+                verify.then(function (value) {
+                   assert.equal(expected.value, value);
+                   ok(!isNaN(value), 'returns number');
+                }).finally(start);
+
+             }).fail(start);
           });
 
-
-          test("enduring stash 'set' updates a value if it already exist", function (assert) {
+          asyncTest("enduring stash 'set' updates a value if it already exist", function (assert) {
              var expected = { key: 'val' + (new Date()).getTime(), value: 3.14 };
              var expected2 = expected;
              expected2.value = 5;
 
-             var setInitialValue = stash.set(expected.key, expected.value);
-             assert.willDeepEqual(setInitialValue,
-                expected.value, 'set promise fulfilled and returns key and value');
+             var test = stash.set(expected.key, expected.value)
+                 .then(stash.set(expected.key, expected2.value));
 
-             setInitialValue.then(function () {
-                assert.willDeepEqual(
-                   stash.set(expected.key, expected2.value),
-                   expected.value, 'set promise fulfilled and returns key and value');
-             }).then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected2.value, 'get promise resolved',
-                  function (value) {
-                     ok(!isNaN(value), 'returns number');
-                     assert.equal(value, 5);
-                  });
-             });
+             test.then(function () {
+
+                var verify = stash.get(expected.key);
+                verify.then(function (actualValue) {
+                   assert.equal(expected2.value, actualValue, 'should be equal');
+                }).finally(start);
+
+             }).fail(start);
           });
 
-          test("enduring stash 'get' promise is resolved with undefined if no value exists", function (assert) {
+          asyncTest("enduring stash 'get' promise is resolved with undefined if no value exists", function (assert) {
              var expected = { key: 'val' + (new Date()).getTime(), value: undefined };
-             assert.willEqual(
-               stash.get(expected.key),
-               expected.value, 'get promise resolved'
-              );
+
+             var test = stash.get(expected.key);
+             test.then(function (value) {
+                assert.equal(value, expected.value, 'get promise resolved');
+             }).finally(start);
           });
 
-          test("enduring stash 'getAll' promise is resolved with array of items", 4, function (assert) {
-             var expected = { key: 'val' + (new Date()).getTime() + Math.random(), value: 5 };
-             var expectedArray = [];
-             var promises = [];
-             for (var i = 0; i < 10; i++) {
-                expectedArray.push(expected.value + i);
-                promises.push(stash.set(expected.key + i, expected.value + i));
-             }
+          asyncTest("enduring stash 'getAll' promise is resolved with array of items", function (assert) {
 
-             var removeAll = stash.removeAll();
-             promises.push(removeAll);
-             assert.will(
-               removeAll,
-               'start by clearing everything');
+             var setup = stash.removeAll()
+               .then(function () {
+                  var expected = { key: 'val' + (new Date()).getTime() + Math.random(), value: 5 };
+                  var expectedArray = [];
+                  var promises = [];
 
-
-             Q.allSettled(promises).then(function () {
-                assert.willDeepEqual(
-                  stash.getAll(),
-                  expectedArray, 'getAll promise resolved',
-                  function (value) {
-                     assert.equal(10, value.length, 'correct number of items returned');
-                     assert.deepEqual(expectedArray, value);
+                  for (var i = 0; i < 10; i++) {
+                     expectedArray.push(expected.value + i);
+                     promises.push(stash.set(expected.key + i, expected.value + i));
                   }
-                 );
-             });
+                  return Q.allSettled(promises);
+               });
+
+             setup.then(function () {
+                var test = stash.getAll();
+                test.then(function (value) {
+                   assert.equal(10, value.length, 'correct number of items returned');
+                   assert.deepEqual(expectedArray, value);
+                }).finally(start);
+
+             }).fail(start);
           });
 
-          test("enduring stash 'getAll' promise is resolved with an empty array if no values exists", function (assert) {
-
-             var removeAll = stash.removeAll()
-             assert.will(
-               removeAll,
-               'start by clearing everything');
+          asyncTest("enduring stash 'getAll' promise is resolved with an empty array if no values exists", function (assert) {
 
              var expectedArray = [];
+             var setup = stash.removeAll()
 
-             removeAll.then(function () {
-                assert.willDeepEqual(
-                  stash.getAll(),
-                  expectedArray, 'getAll promise resolved',
-                  function (value) {
-                     assert.equal(0, value.length, 'correct number of items returned');
-                     assert.deepEqual(expectedArray, value);
-                  }
-                 );
-             });
+             setup.then(function () {
+
+                var test = stash.getAll();
+                test.then(function (value) {
+                   assert.equal(0, value.length, 'correct number of items returned');
+                   assert.deepEqual(expectedArray, value);
+                }).finally(start);
+
+             }).fail(start);
           });
 
-
-          test("enduring stash 'add' adds a value if one doesn't exist", function (assert) {
-             var expected = { key: 'val' + (new Date()).getTime() + Math.random(), value: 3.14 };
-             var testPromise = stash.add(expected.key, expected.value);
-             assert.willDeepEqual(
-                testPromise,
-                expected.value, 'add promise fulfilled and returns key and value');
-
-             testPromise.then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected.value, 'get promise resolved');
-             });
-          });
-
-          test("enduring stash 'add' does not update a value if it already exist", function (assert) {
+          asyncTest("enduring stash 'add' adds a value if one doesn't exist", function (assert) {
              var expected = { key: 'val' + (new Date()).getTime() + Math.random(), value: 3.14 };
 
-             var testPromise = stash.add(expected.key, expected.value);
-             assert.willDeepEqual( // first time
-                testPromise,
-                expected.value, 'add succeeds the first time');
+             var test = stash.add(expected.key, expected.value);
+             test.then(function () {
 
-             testPromise.then(function () {
-                assert.wont(
-                   stash.add(expected.key, 22),
-                   'but fails if trying to add with the same key again');
-             }).then(function () {
-                assert.willEqual(
-                  stash.get(expected.key),
-                  expected.value, 'leaving the data unchanged');
-             });
+                var verify = stash.get(expected.key)
+                .then(function (value) {
+                   assert.equal(value, expected.value, 'get promise resolved');
+                }).finally(start);
+
+             }).fail(start);
           });
 
+          asyncTest("enduring stash 'add' does not update a value if it already exist", 2, function (assert) {
+             var expected = { key: 'val' + (new Date()).getTime() + Math.random(), value: 3.14 };
 
-          test("enduring stash 'update' does not add an item if it doesn't exist", function (assert) {
+             var setup = stash.add(expected.key, expected.value);
+             setup.then(function () {
+                var test = stash.add(expected.key, 22)
+                   .fail(function (error) {
+                      ok('promise was rejected');
+                   }).then(function () {
+                      stash.get(expected.key).then(function (value) {
+                         assert.equal(value, expected.value, 'data should be unchanged');
+                      });
+                   }).finally(start);
+             }).fail(start);
+          });
+
+          asyncTest("enduring stash 'update' promise rejected if item doesn't exist", function (assert) {
              var expected = { key: 'val' + (new Date()).getTime(), value: 3.14 };
 
-             var testPromise = stash.update(expected.key, expected.value);
-             assert.wont(
-                testPromise,
-                'update promise rejected and no change was made');
+             var test = stash.update(expected.key, expected.value);
 
-             testPromise.then(function () {
-                assert.willEqual(
-                  stash.contains(expected.key),
-                  false, "item still doesn't exist");
+             test.fail(function (error) {
+                ok('promise rejected');
+
+             }).finally(start);
+          });
+
+          asyncTest("enduring stash 'update' does not add an item if it doesn't exist", function (assert) {
+             var expected = { key: 'val' + (new Date()).getTime(), value: 3.14 };
+
+             var test = stash.update(expected.key, expected.value);
+
+             test.then(start)
+             .fail(function (error) {
+
+                var verify = stash.contains(expected.key)
+                  .then(function (value) {
+                     assert.equal(value, false, "item still doesn't exist");
+                  }).finally(start);
              });
           });
 
-          test("enduring stash 'update' updates a value if it already exists", function (assert) {
+          asyncTest("enduring stash 'update' updates a value if it already exists", 2, function (assert) {
              var expected = { key: 'val' + (new Date()).getTime(), value: 3.14 };
              var expected2 = expected;
              expected2.value = 5;
 
-             var testPromise = stash.set(expected.key, expected.value);
-             assert.willDeepEqual(
-                testPromise,
-                expected.value, 'new item is added');
+             var setup = stash.set(expected.key, expected.value);
+             setup.then(function () {
 
-             testPromise.then(function () {
-                assert.willDeepEqual(
-                   stash.update(expected.key, expected2.value),
-                   expected.value, 'and then the value is updated');
-             }).then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected2.value, 'get promise resolved',
-                  function (value) {
-                     assert.equal(value, 5, 'and we can get the new value');
-                  });
-             });
+                var test = stash.update(expected.key, expected2.value);
+                test.then(function () {
+                   ok('promise resolved');
+
+                   var verify = stash.get(expected.key);
+                   verify.then(function (value) {
+                      assert.equal(value, 5, 'value is updated');
+
+                   }).finally(start);
+
+                }).fail(start);
+             }).fail(start);
           });
 
-
-          test("enduring stash 'contains' returns true if an item exists", function (assert) {
+          asyncTest("enduring stash 'contains' returns true if an item exists", function (assert) {
              var expected = { key: 'val' + (new Date()).getTime(), value: 3.14 };
 
-             var addItem = stash.set(expected.key, expected.value);
-             assert.willDeepEqual(
-                addItem,
-                expected.value, 'set promise fulfilled and returns key and value');
+             var setup = stash.set(expected.key, expected.value);
+             setup.then(function () {
 
-             addItem.then(function () {
-                assert.willEqual(
-                   stash.contains(expected.key),
-                   true, 'contains promise fulfilled and returns true');
-             });
+                var test = stash.contains(expected.key);
+                test.then(function (value) {
+                   assert.equal(value, true, 'contains promise fulfilled and returns true');
+                }).finally(start);
+
+             }).fail(start);
           });
 
-          test("enduring stash 'contains' returns false if an item does not exist", function (assert) {
+          asyncTest("enduring stash 'contains' returns false if an item does not exist", function (assert) {
              var expected = { key: 'val' + (new Date()).getTime(), value: 3.14 };
 
-             assert.willEqual(
-                stash.contains(expected.key),
-                false, 'contains promise fulfilled and returns false');
+             var test = stash.contains(expected.key);
+             test.then(function (value) {
+                assert.equal(value, false, 'contains promise fulfilled and returns false');
+             }).finally(start);
           });
 
-
-          test("enduring stash 'remove' promise resolves and item is removed", function (assert) {
+          asyncTest("enduring stash 'remove' promise resolves and item is removed", 2, function (assert) {
              var expected = { key: 'val' + (new Date()).getTime(), value: 3.14 };
 
-             var addItem = stash.set(expected.key, expected.value);
-             assert.willDeepEqual(
-              addItem,
-              expected.value, 'item is added');
+             var setup = stash.set(expected.key, expected.value);
 
-             addItem.then(function () {
-                var contains = stash.contains(expected.key);
-                assert.willEqual(contains, true, 'and contains returns true');
-                return contains;
+             setup.then(function () {
 
-             }).then(function () {
-                var remove = stash.remove(expected.key);
-                assert.will(remove, 'remove promise fulfilled');
-                return remove;
+                var test = stash.remove(expected.key);
+                test.then(function () {
 
-             }).then(function () {
-                var contains = stash.contains(expected.key);
-                assert.willEqual(contains, false, 'and now contains is false');
-                return contains;
+                   assert.ok('remove promise resolved');
+                   var verify = stash.contains(expected.key);
+                   verify.then(function (value) {
+                      assert.equal(value, false, 'and now contains is false');
+                   }).finally(start);
 
-             }).then(function () {
-                var get = stash.get(expected.key);
-                assert.willDeepEqual(get, undefined, 'and retrieving the item gives undefined');
-             });
+                }).fail(start);
+             }).fail(start);
           });
 
-          test("enduring stash 'remove' return promise resolves with no action if an item does not exist", function (assert) {
+          asyncTest("enduring stash 'remove' promise resolves with no action if an item does not exist", function (assert) {
              var expected = { key: 'val' + (new Date()).getTime(), value: 3.14 };
 
-             var startsEmpty = stash.contains(expected.key);
-             assert.willEqual(
-                startsEmpty,
-                false, 'contains promise fulfilled and returns false before removal');
+             var test = stash.remove(expected.key);
+             test.then(function () {
+                assert.ok('remove promise resolved');
+             }).finally(start);
 
-             startsEmpty.then(function () {
-                var remove = stash.remove(expected.key);
-                assert.will(remove, 'remove promise fulfilled and returns false');
-                return remove;
-             }).then(function () {
-                assert.willEqual(
-                stash.contains(expected.key),
-                false, 'contains promise fulfilled and returns false after removal');
-             });
           });
 
-          test("enduring stash 'removeAll' removes all items", function (assert) {
+          asyncTest("enduring stash 'removeAll' removes all items", 2, function (assert) {
              var expected = { key: 'val' + (new Date()).getTime(), value: 3.14 };
 
-             var addItem = stash.set(expected.key, expected.value);
+             var setup = stash.set(expected.key, expected.value);
+             setup.then(function () {
 
-             assert.willDeepEqual(
-                 addItem,
-                 expected.value, 'item is added');
+                var test = stash.removeAll();
+                test.then(function () {
+                   ok('removeAll promise fulfilled');
+                   var verify = stash.contains(expected.key);
+                   verify.then(function (value) {
+                      assert.equal(value, false, 'and now contains is false');
+                   }).finally(start);
 
-
-             addItem.then(function () {
-                var removeAll = stash.removeAll();
-                assert.will(
-                   removeAll,
-                   'removeAll promise fulfilled');
-                return removeAll;
-             }).then(function () {
-                assert.willEqual(
-                   stash.contains(expected.key),
-                   false, 'and now contains is false');
-             });
-
-
+                }).fail(start);
+             }).fail(start);
           });
 
        };
 
-       var runDataTypeTests = function () {
+       var runDataTypeTests = function (stash) {
 
-          test("enduring stash sets and gets a number", function (assert) {
+          var dataTypeTest = function (assert, expected) {
+             stash.set('val', expected.value).then(function () {
+
+                stash.get(expected.key).then(function (value) {
+                   assert.deepEqual(value, expected.value, 'returns correct value');
+                }).finally(start);
+
+             }).fail(start);
+          };
+
+          asyncTest("enduring stash sets and gets a number", function (assert) {
              var expected = { key: 'val', value: 3.14 };
-
-             var setItem = stash.set('val', expected.value);
-             assert.willDeepEqual(
-                setItem,
-                expected.value, 'set promise fulfilled and returns key and value');
-
-             setItem.then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected.value, 'get promise resolved',
-                  function (value) {
-                     ok(!isNaN(value), 'returns number');
-                  });
-             });
+             dataTypeTest(assert, expected);
           });
 
-          test("enduring stash sets and gets a number, 0", function (assert) {
+          asyncTest("enduring stash sets and gets a number, 0", function (assert) {
              var expected = { key: 'val', value: 0 };
-
-             var setItem = stash.set('val', expected.value);
-             assert.willDeepEqual(
-                setItem,
-                expected.value, 'set promise fulfilled and returns key and value');
-
-             setItem.done(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected.value, 'get promise resolved');
-             });
+             dataTypeTest(assert, expected);
           });
 
-          test("enduring stash sets and gets a string", function (assert) {
+          asyncTest("enduring stash sets and gets a string", function (assert) {
              var expected = { key: 'val', value: "Hello World" };
-
-             var setItem = stash.set('val', expected.value);
-             assert.willDeepEqual(
-                setItem,
-                expected.value, 'returns expected value');
-
-             setItem.then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected.value, 'get promise resolved');
-             });
+             dataTypeTest(assert, expected);
           });
 
-          test("enduring stash gets and sets a string with special characters", function (assert) {
+          asyncTest("enduring stash gets and sets a string with special characters", function (assert) {
              var expected = { key: 'val', value: "Hello World\how\are\you\today" };
-
-             var setItem = stash.set('val', expected.value);
-             assert.willDeepEqual(
-                setItem,
-                expected.value, 'returns expected value');
-
-             setItem.then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected.value, 'get promise resolved');
-             });
-
+             dataTypeTest(assert, expected);
           });
 
-          test("enduring stash sets and gets a regular expression", function (assert) {
+          asyncTest("enduring stash sets and gets a regular expression", function (assert) {
              var expected = { key: 'val', value: /lorem|ipsum/ };
-
-             var setItem = stash.set('val', expected.value);
-             assert.willDeepEqual(
-                setItem,
-                expected.value, 'returns expected value');
-
-             setItem.then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected.value, 'get promise resolved');
-             });
+             dataTypeTest(assert, expected);
           });
 
-          test("enduring stash sets and gets a true boolean", function (assert) {
+          asyncTest("enduring stash sets and gets a true boolean", function (assert) {
              var expected = { key: 'val', value: true };
-
-             var setItem = stash.set('val', expected.value);
-             assert.willDeepEqual(
-                setItem,
-                expected.value, 'returns expected value');
-
-             setItem.then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected.value, 'get promise resolved');
-             });
+             dataTypeTest(assert, expected);
           });
 
-          test("enduring stash sets and gets a false boolean", function (assert) {
+          asyncTest("enduring stash sets and gets a false boolean", function (assert) {
              var expected = { key: 'val', value: false };
+             dataTypeTest(assert, expected);
 
-             var setItem = stash.set('val', expected.value);
-             assert.willDeepEqual(
-                setItem,
-                expected.value, 'returns expected value');
-
-             setItem.then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected.value, 'get promise resolved');
-             });
           });
 
-          test("enduring stash sets and gets null", function (assert) {
+          asyncTest("enduring stash sets and gets null", function (assert) {
              var expected = { key: 'val', value: null };
-
-             var setItem = stash.set('val', expected.value);
-             assert.willDeepEqual(
-                setItem,
-                expected.value, 'returns expected value');
-
-             setItem.then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected.value, 'get promise resolved');
-             });
+             dataTypeTest(assert, expected);
           });
 
-          test("enduring stash sets and gets undefined", function (assert) {
+          asyncTest("enduring stash sets and gets undefined", function (assert) {
              var expected = { key: 'val', value: undefined };
-
-             var setItem = stash.set('val', expected.value);
-             assert.willDeepEqual(
-                setItem,
-                expected.value, 'returns expected value');
-
-             setItem.then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected.value, 'get promise resolved');
-             });
+             dataTypeTest(assert, expected);
           });
 
-          test("enduring stash sets and gets a date", function (assert) {
+          asyncTest("enduring stash sets and gets a date", function (assert) {
              var expected = { key: 'val', value: new Date() };
-
-             var setItem = stash.set('val', expected.value);
-             assert.willDeepEqual(
-                setItem,
-                expected.value, 'returns expected value');
-
-             setItem.then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected.value, 'get promise resolved');
-             });
+             dataTypeTest(assert, expected);
           });
 
-          test("enduring stash sets and gets a complex object", function (assert) {
+          asyncTest("enduring stash sets and gets a complex object", function (assert) {
              var object = {
                 name: "Operation Enduring Stash",
                 created: new Date(),
@@ -546,53 +403,41 @@
              };
              var expected = { key: 'val', value: object };
 
-             var setItem = stash.set('val', expected.value);
-             assert.willDeepEqual(
-                setItem,
-                expected.value, 'returns expected value');
+             stash.set(expected.key, expected.value).then(function () {
+                stash.get(expected.key).then(function (value) {
 
-             setItem.then(function () {
-                assert.willDeepEqual(
-                  stash.get(expected.key),
-                  expected.value, 'get promise resolved',
-                  function (value) {
-                     assert.deepEqual(value, object, 'object is good!');
-                     assert.strictEqual(value.name, object.name, 'string is the same');
-                     assert.deepEqual(value.created, object.created, 'date is the same');
-                     assert.strictEqual(value.isAwesome, object.isAwesome, 'boolean is the same');
-                     assert.strictEqual(value.levelOfAwesomeness, object.levelOfAwesomeness, 'number is the same');
-                     assert.deepEqual(value.contributors, object.contributors, 'array is the same');
-                  });
-             });
+                   assert.deepEqual(value, object, 'object is good!');
+                   assert.strictEqual(value.name, object.name, 'string is the same');
+                   assert.deepEqual(value.created, object.created, 'date is the same');
+                   assert.strictEqual(value.isAwesome, object.isAwesome, 'boolean is the same');
+                   assert.strictEqual(value.levelOfAwesomeness, object.levelOfAwesomeness, 'number is the same');
+                   assert.deepEqual(value.contributors, object.contributors, 'array is the same');
+                }).finally(start);
+
+             }).fail(start);
           });
 
-          test("enduring stash sets and gets an array of complex object", function (assert) {
+          asyncTest("enduring stash sets and gets an array of complex objects", function (assert) {
              var array = [];
              array.push({ id: 1, name: "Enduring", created: new Date() });
              array.push({ id: 2, name: "Stash", created: new Date() });
-
              var expected = { key: 'val', value: array };
-             var setItem = stash.set('val', expected.value);
-             assert.willDeepEqual(
-                setItem,
-                expected.value, 'returns expected value');
 
-             setItem.then(function () {
-                assert.willDeepEqual(
-               stash.get(expected.key),
-               expected.value, 'get promise resolved',
-               function (value) {
-                  assert.strictEqual(value[0], object[0], 'first item is the same');
-                  assert.strictEqual(value[1].name, object[1].name, 'second item string is the same');
-                  assert.deepEqual(value[1].created, object[1].created, 'second item date is the same');
-               });
-             });
+             stash.set(expected.key, expected.value).then(function () {
+
+                stash.get(expected.key).then(function (value) {
+                   assert.deepEqual(value[0], expected.value[0], 'first item is the same');
+                   assert.deepEqual(value[1].name, expected.value[1].name, 'second item string is the same');
+                   assert.deepEqual(value[1].created, expected.value[1].created, 'second item date is the same');
+                }).finally(start);
+
+             }).fail(start);
           });
 
        };
+
        return {
           run: run
        };
     }
 );
-

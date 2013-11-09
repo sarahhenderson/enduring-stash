@@ -53,19 +53,20 @@
    };
 
    WebSQLStorage.prototype.getAll = function (key, promise) {
-      var self = then;
+      var self = this;
       this.storage.transaction(function (tx) {
          var sqlStatement = "SELECT value FROM Stash";
          var statementParams = [];
          var successCallback = function (tx, result) {
             var data = [];
             for (var i = 0; i < result.rows.length; i++) {
-               var item = result.rows.item(i);
+               var item = result.rows.item(i).value;
+               var us = self.unstringify(item);
                data.push(self.unstringify(item));
             }
             promise.resolve(data);
          };
-         var errorCallback = function (tx, error) { console.error(tx); promise.reject(error); };
+         var errorCallback = function (tx, error) { promise.reject(error); };
 
          tx.executeSql(sqlStatement, statementParams, successCallback, errorCallback);
       },
@@ -99,11 +100,8 @@
       var self = this;
       this.storage.transaction(function (tx) {
          var sqlStatement = "INSERT INTO Stash (id, value) VALUES (?, ?)";
-         console.log(sqlStatement);
          var statementParams = [key, self.stringify(value)];
-         console.log(statementParams);
          var successCallback = function (tx, result) {
-            console.log(result);
             if (result.rowsAffected !== 1) {
                promise.reject("Value was not updated");
                return;
@@ -122,11 +120,8 @@
       var self = this;
       this.storage.transaction(function (tx) {
          var sqlStatement = "UPDATE Stash SET value = ? WHERE id = ?";
-         console.log(sqlStatement);
          var statementParams = [self.stringify(value), key];
-         console.log(statementParams);
          var successCallback = function (tx, result) {
-            console.log(result);
             if (result.rowsAffected === 1) {
                promise.resolve(value);
             } else {
@@ -163,7 +158,6 @@
          var statementParams = [key];
          var successCallback = function (tx, result) {
             var itemCount = result.rows.length;
-            console.log('contains '+key+': item count is ' + itemCount);
             promise.resolve(itemCount > 0);
          };
          var errorCallback = function (tx, error) { promise.reject(error); };

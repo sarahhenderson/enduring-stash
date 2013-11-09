@@ -21,92 +21,96 @@ window.enduring = (function () {
    // *** Stash "class" ------------------------------------- 
    // must be instantiated with a provider
 
-   var Stash = (function (name, provider) {
+   var Stash = function (name, provider) {
 
-      if (!provider) { throw "Cannot create a stash without a provider"; }
+      this.provider = provider;
+      if (!this.provider) { throw "Cannot create a stash without a provider"; }
 
       // establish keyPrefix for this collection
-      var keyPrefix = "_stash_";
-      keyPrefix += name ? name + "_" : "";
-      keyPrefix = keyPrefix.toLowerCase()
+      this.keyPrefix = this.createKeyPrefix(name);
+      if (!this.keyPrefix) { throw "Unable to create key prefix"; }
+
+   };
+
+   Stash.prototype.createKeyPrefix = function (name) {
+      var prefix = "_stash_";
+      prefix += name ? name + "_" : "";
+      prefix = prefix.toLowerCase()
         .replace(/[^\w ]+/g, '')
         .replace(/ +/g, '-');
+      return prefix;
+   }
 
-      // creates a key unique to the collection and this application
-      var createStoreKey = function (key) {
-         if (key instanceof Array || key === null || key === undefined) {
-            throw "Invalid key: " + key;
-         }
-         return keyPrefix + key;
-      };
+   // creates a key unique to the collection and this application
+   Stash.prototype.createStoreKey = function (key) {
+      if (key instanceof Array || key === null || key === undefined) {
+         throw "Invalid key: " + key;
+      }
+      return this.keyPrefix + key;
+   };
 
-      // wraps each provider method in a promise
-      var promiseWrap = function (callback) {
-         var deferred = Q ? Q.defer() : $.Deferred();
-         callback(deferred);
-         return Q ? deferred.promise : deferred.promise();
-      };
+   Stash.prototype.get = function (key) {
+      var self = this;
+      return self.promiseWrap(function (promise) {
+         self.provider.get(self.createStoreKey(key), promise);
+      });
+   };
 
-      // individual methods
-      var get = function (key) {
-         return promiseWrap(function (promise) {
-            provider.get(createStoreKey(key), promise);
-         });
-      };
+   Stash.prototype.set = function (key, value) {
+      var self = this;
+      return self.promiseWrap(function (promise) {
+         self.provider.set(self.createStoreKey(key), value, promise);
+      });
+   };
 
-      var set = function (key, value) {
-         return promiseWrap(function (promise) {
-            provider.set(createStoreKey(key), value, promise);
-         });
-      };
+   // wraps each provider method in a promise
+   Stash.prototype.promiseWrap = function (callback) {
+      var deferred = Q ? Q.defer() : $.Deferred();
+      callback(deferred);
+      return Q ? deferred.promise : deferred.promise();
+   };
 
-      var getAll = function () {
-         return promiseWrap(function (promise) {
-            provider.getAll(keyPrefix, promise);
-         });
-      };
-      var update = function (key, value) {
-         return promiseWrap(function (promise) {
-            provider.update(createStoreKey(key), value, promise);
-         });
-      };
-      var add = function (key, value) {
-         return promiseWrap(function (promise) {
-            provider.add(createStoreKey(key), value, promise);
-         });
-      };
-      var remove = function (key) {
-         return promiseWrap(function (promise) {
-            provider.remove(createStoreKey(key), promise);
-         });
-      };
-      var contains = function (key) {
-         return promiseWrap(function (promise) {
-            provider.contains(createStoreKey(key), promise);
-         });
-      };
-      var removeAll = function () {
-         return promiseWrap(function (promise) {
-            provider.removeAll(promise);
-         });
-      };
-
-      return {
-         get: get,
-         getAll: getAll,
-         set: set,
-         add: add,
-         update: update,
-         contains: contains,
-         remove: remove,
-         removeAll: removeAll
-      };
-
-   });
+   // individual methods
+   Stash.prototype.getAll = function () {
+      var self = this;
+      return self.promiseWrap(function (promise) {
+         self.provider.getAll(self.keyPrefix, promise);
+      });
+   };
+   Stash.prototype.update = function (key, value) {
+      var self = this;
+      return self.promiseWrap(function (promise) {
+         self.provider.update(self.createStoreKey(key), value, promise);
+      });
+   };
+   Stash.prototype.add = function (key, value) {
+      var self = this;
+      return self.promiseWrap(function (promise) {
+         self.provider.add(self.createStoreKey(key), value, promise);
+      });
+   };
+   Stash.prototype.remove = function (key) {
+      var self = this;
+      return self.promiseWrap(function (promise) {
+         self.provider.remove(self.createStoreKey(key), promise);
+      });
+   };
+   Stash.prototype.contains = function (key) {
+      var self = this;
+      return self.promiseWrap(function (promise) {
+         self.provider.contains(self.createStoreKey(key), promise);
+      });
+   };
+   Stash.prototype.removeAll = function () {
+      var self = this;
+      return self.promiseWrap(function (promise) {
+         self.provider.removeAll(promise);
+      });
+   };
 
 
    var providerFactory = (function () {
-      
+
       var availableProviders = [];
       var namedProviders = {};
 
@@ -256,8 +260,11 @@ window.enduring = (function () {
       } else {
          thisProvider = providerFactory.getProvider();
       }
-
+      //      console.log('instantiated a stash with provider');
+      //      console.log(thisProvider);
       var stash = new Stash(collection, thisProvider);
+      //      console.log('stash instance is');
+      //      console.log(stash);
       return stash;
    };
 

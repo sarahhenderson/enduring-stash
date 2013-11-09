@@ -3,7 +3,6 @@ require.config({
    baseUrl: '../dist',
    paths: {
       'QUnit': '../lib/qunit/qunit-1.12.0',
-      'QPromises': '../lib/qunit/qunit.promises',
       'Q': '../lib/q/q',
 
       'enduring': 'enduring-stash.min',
@@ -21,10 +20,6 @@ require.config({
             QUnit.config.autoload = false;
             QUnit.config.autostart = false;
          }
-      },
-      'QPromises': {
-         deps: ['QUnit'],
-         exports: 'QUnit'
       },
       'Q': {
          exports: 'Q',
