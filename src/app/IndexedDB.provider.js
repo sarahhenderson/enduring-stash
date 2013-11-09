@@ -61,9 +61,11 @@
       var self = this;
       this.getTransaction(this.READ_ONLY, promise).then(function (trans) {
          var request = trans.store.get(key);
+
          request.onerror = function (event) {
             promise.reject(request.error);
          };
+
          request.onsuccess = function (event) {
             promise.resolve(self.unstringify(request.result));
          };
@@ -83,7 +85,11 @@
          request.onsuccess = function (event) {
             var cursor = event.target.result;
             if (cursor) {
-               items.push(self.unstringify(cursor.value));
+               var key = cursor.key;
+               if (key.substring(0, keyPrefix.length) === keyPrefix) {
+                  var value = self.unstringify(cursor.value)
+                  items.push(value);
+               }
                cursor.continue();
             } else {
                promise.resolve(items);
@@ -94,17 +100,15 @@
 
    IDBStorage.prototype.set = function (key, value, promise) {
       var self = this;
-      this.getTransaction(this.READ_WRITE, promise).then(function (trans) {
-         var request = trans.store.get(key);
+      this.getTransaction(self.READ_WRITE, promise).then(function (trans) {
+         var request = trans.store.put(self.stringify(value), key);
+
          request.onerror = function (event) {
             promise.reject(request.error);
          };
+
          request.onsuccess = function (event) {
-            if (request.result) {
-               self.update(key, value, promise);
-            } else {
-               self.add(key, value, promise);
-            }
+            promise.resolve(value);
          };
       });
    };
@@ -122,6 +126,8 @@
       });
    };
 
+   // IDB put will create items that don't exist.  We don't want that, so we have to 
+   // check first whether the item exists and only create it if it doesn't
    IDBStorage.prototype.update = function (key, value, promise) {
       var self = this;
       var defer = Q ? Q.defer() : $.Deferred();
@@ -130,9 +136,8 @@
 
       checkedIfExists.then(function (contains) {
          if (!contains) {
-            promise.reject("Item already exists");
+            promise.reject("Item does not exist");
          } else {
-
             self.getTransaction(self.READ_WRITE, promise).then(function (trans) {
                var request = trans.store.put(self.stringify(value), key);
                request.onerror = function (event) {
