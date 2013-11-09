@@ -39,7 +39,7 @@ var people = new enduring.stashOf('people');
 
 ## API
 
-If you want to try these samples in your browser, visit the demo site: http://sarahhenderson.github.io/enduring-stash/
+To try these samples in your browser, visit the demo site: http://sarahhenderson.github.io/enduring-stash/
 
 #### Set a value
 
@@ -95,7 +95,7 @@ settings.contains("FavouriteColour")
 	} else {
 		// something else
 	}
-	});
+});
 ```
 
 #### GetAll
