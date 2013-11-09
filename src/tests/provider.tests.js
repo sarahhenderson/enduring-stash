@@ -1,5 +1,6 @@
 ﻿define(['QUnit', 'enduring'], function (QUnit, enduring) {
        "use strict";
+       var console = console || { error: function () { } };
 
        var run = function (providerDisplayName, providerName) {
 
@@ -83,19 +84,16 @@
                    assert.ok(value.indexOf(expected2.value) > -1, 'second item is present');
                    assert.ok(value.indexOf(expected3.value) === -1, 'third item should not be present');
                 })
+                .fail(function (error) { console.error(error);})
                 .finally(start);
 
-             }).fail(function (error) { console.error(error); });
+             }).fail(function (error) { console.error(error); start(); });
           });
        };
 
        var runAccessTests = function (stash) {
 
           asyncTest("enduring stash 'set' adds a value if one doesn't exist", 2, function (assert) {
-
-
-             console.log('another test, stash is ');
-             console.log(stash);
 
              var expected = { key: 'val' + (new Date()).getTime(), value: 3.14 };
              var test = stash.set(expected.key, expected.value);
@@ -337,9 +335,9 @@
 
                 stash.get(expected.key).then(function (value) {
                    assert.deepEqual(value, expected.value, 'returns correct value');
-                }).finally(start);
+                }).fail(function (error) { console.error(error); }).finally(start);
 
-             }).fail(start);
+             }).fail(function (error) { console.error(error); start(); });
           };
 
           asyncTest("enduring stash sets and gets a number", function (assert) {
