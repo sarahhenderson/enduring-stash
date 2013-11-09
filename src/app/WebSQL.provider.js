@@ -52,11 +52,11 @@
 	   );
    };
 
-   WebSQLStorage.prototype.getAll = function (key, promise) {
+   WebSQLStorage.prototype.getAll = function (keyPrefix, promise) {
       var self = this;
       this.storage.transaction(function (tx) {
-         var sqlStatement = "SELECT value FROM Stash";
-         var statementParams = [];
+         var sqlStatement = "SELECT value FROM Stash WHERE id LIKE ?";
+         var statementParams = [keyPrefix + '%'];
          var successCallback = function (tx, result) {
             var data = [];
             for (var i = 0; i < result.rows.length; i++) {
