@@ -1,76 +1,315 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
-  <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <title>Enduring Stash by sarahhenderson</title>
-  </head>
+   <head>
+      <meta charset="utf-8">
+      <title>Enduring Stash</title>
+      <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+      <link rel="stylesheet" type="text/css" href="css/prism.css" />
+      <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" />
+      <link href="http://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700" rel="stylesheet" type="text/css">
+      <link rel="stylesheet" type="text/css" href="css/main.css" />
 
-  <body>
-    <div id="container">
-      <div class="inner">
+   </head>
+   <body>
+      <div class="container language-javascript">
 
-        <header>
-          <h1>Enduring Stash</h1>
-          <h2>Simple client-side persistence with a lightweight, promise-based API and multiple storage providers</h2>
-        </header>
+         <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+               <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+               </button>
+               <a class="navbar-brand" href="#">Enduring Stash</a>
+            </div>
 
-        <section id="downloads" class="clearfix">
-          <a href="https://github.com/sarahhenderson/enduring-stash/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
-          <a href="https://github.com/sarahhenderson/enduring-stash/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
-          <a href="https://github.com/sarahhenderson/enduring-stash" id="view-on-github" class="button"><span>View on GitHub</span></a>
-        </section>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+               <ul class="nav navbar-nav">
+                  <li class="active"><a href="#features">Features</a></li>
+                  <li><a href="#getting-started">Getting Started</a></li>
+						<li><a href="#api" class="nav-item-api">API</a></li>
+                  <li class="dropdown">
+                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <b class="caret"></b></a>
+                     <ul class="dropdown-menu">
+                        <li><a href="#api-set">Set</a></li>
+                        <li><a href="#api-get">Get</a></li>
+                        <li><a href="#api-add">Add</a></li>
+                        <li><a href="#api-update">Update</a></li>
+                        <li><a href="#api-contains">Contains</a></li>
+                        <li><a href="#api-getall">GetAll</a></li>
+                        <li><a href="#api-remove">Remove</a></li>
+                        <li><a href="#api-removeall">RemoveAll</a></li>
+                        
+                     </ul>
+                  </li>
+                  <li><a href="#rationale">Rationale</a></li>
+                  <li><a href="#licence">Licence</a></li>
+                  <li><a href="#author">Author</a></li>
+               </ul>
+            </div><!-- /.navbar-collapse -->
+         </nav>
 
-        <hr>
 
-        <section id="main_content">
-          <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+         <div class="jumbotron">
+            <div class="row">
+               <div class="col-sm-8">
+                  <h1>Enduring Stash</h1>
+                  <h3>Simple promise-based client-side persistence that supports multiple storage providers. </h3>
+               </div>
+               <div class="col-sm-4">
+                  <p>&nbsp;</p>
+                  <p>Current Version: <strong>0.1.0 (beta)</strong></p>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+                  <p><a href="https://github.com/sarahhenderson/enduring-stash" class="btn btn-primary"><i class="fa fa-github"></i> Contribute on Github</a></p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+                  <p><a href="downloads/enduring-stash-0.1.0.zip" class="btn btn-success btn-lg"><i class="fa fa-download fa-lg"></i> Download now</a></p>
+               </div>
+            </div>
+         </div>
+
+         <section>
+            <div id="features" class="row">
+               <div class="col-md-4">
+                  <h3><span class="fa fa-th"></span> Multiple providers</h3>
+                  <p>IndexedDB, WebSQL, LocalStorage, SessionStorage, Cookies and in-Memory.
+                  </p>
+               </div>
+               <div class="col-md-4">
+                  <h3><span class="fa fa-gear"></span> Automatic provider selection</h3>
+                  <p>Load the providers you want to use, and it will choose the first one that is
+				available on that platform.
+                  </p>
+               </div>
+               <div class="col-md-4">
+                  <h3><span class="fa fa-magic"></span> Minimal configuration</h3>
+                  <p>No schemas to define, sizes to set or settings to tweak.
+                  </p>
+               </div>
+            </div>
+
+            <div class="row">
+               <div class="col-md-4">
+                  <h3><span class="fa fa-keyboard-o"></span> Simple API</h3>
+                  <p>Get, Set, Add, Update, Remove, GetAll and Contains.  All values set and retrieved by key.
+                  </p>
+               </div>
+               <div class="col-md-4">
+                  <h3><span class="glyphicon glyphicon-ok"></span> Many data types</h3>
+                  <p>Not just strings, numbers and booleans, but also dates, arrays and complex objects.
+                  </p>
+               </div>
+               <div class="col-md-4">
+                  <h3><span class="glyphicon glyphicon-heart"></span> Promise-based</h3>
+                  <p>Add functions return a promise with the result (if any).  Makes it nice and simple to use all
+				the providers in a uniform way.
+                  </p>
+               </div>
+            </div>
+            <div class="row">
+               <div class="col-md-4">
+                  <h3><span class="fa fa-chain"></span> Extensible</h3>
+                  <p>Can plug in additional providers to make use of other data storage technologies in future.
+                  </p>
+               </div>
+
+               <div class="col-md-4">
+                  <h3><span class="fa fa-tasks"></span> Tested</h3>
+                  <p>Full suite of unit tests: <a href="tests/index.html">run the tests now</a>.</p>
+               </div>
+
+               <div class="col-md-4">
+                  <h3><i class="fa fa-plane"></i> Lightweight</h3>
+                  <p>simply handles storage and retrieval so no extra overhead of features you may not need.</p>
+               </div>
+            </div>
+         </section>
+
+
+         <section id="getting-started">
+            <h2>Getting Started</h2>
+            <ol>
+               <li>Include a promise framework.  Currently Q and jQuery are supported (I recommend Q).</li>
+               <li>Include enduring-stash.js</li>
+               <li>Include the storage providers you want to use.&nbsp; Enduring Stash will select the first <em>supported</em> provider it finds, so the order matters.</li>
+            </ol>
+            <pre><code class="language-markup">
+&lt;script src=&quot;q.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;enduring-stash.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;WebStorage.provider.js&quot;&gt;&lt;/script&gt;
+	</code></pre>
+
+            <h4>Create a new Enduring Stash:</h4>
+            <pre><code>var settings = new enduring.stash();</code></pre>
+
+            <h4>Or, create a new named Enduring Stash:</h4>
+            <pre><code>var people = new enduring.stashOf('people');</code></pre>
+
+         </section>
+
+
+         <section id="api">
+            <h2>API</h2>
+            <p><em>If you want to try out the samples below, you should use Developer Tools to view the values of
+				HTML Local Storage. Don't forget to refresh after a change.</em></p>
+
+
+            <h4 id="api-set">Set a value</h4>
+            <p>Set adds a value if it doesn't exist, updates it if it does</p>
+
+            <pre><code>settings.set("Username", username);
+
+var person = { name: "Pat Lee", id: "PL001" };
+people.set(person.id, person);
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+            <form class="form-inline" role="form">
+               <div class="form-group">
+                  <label class="sr-only" for="try-set-value">Enter Username</label>
+                  <input type="email" class="form-control" id="try-set-value" placeholder="Enter username">
+               </div>
+               <button id="try-set" type="button" class="btn btn-success">Try it</button><i class="try-done fa fa-check-square fa-lg"></i>
+            </form>
+            <p class="try-set-message hidden">The values were saved in LocalStorage.
+			You can inspect it using your browser's Developer Tools (e.g. F12 on Chrome, Resources tab).</p>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+            <h4 id="api-get">Get a value</h4>
+            <p>Get returns a promise.  When the promise is resolved, the value is provided as parameter to the success callback.
+		If the value doesn't exist, the promise will be resolved, but the value will be undefined.
+      The promise will only be rejected if some error condition occurred.
+            </p>
+            <pre><code class="language-javascript">settings.get("Username")
+.then(function (result) {
+   $(".try-get-username").html(result);
+});
+people.get("PL001")
+.then(function (person) {
+   $(".try-get-person").html(person.name);
+});
+   </code></pre>
+            <p><button id="try-get" class="btn btn-success">Try it</button><i class="try-done fa fa-check-square fa-lg"></i></p>
+            <div class="try-get-message hidden">
+               <p>The username is <strong class="try-get-username"></strong></p>
+               <p>The name of person PL001 is <strong class="try-get-person"></strong></p>
+            </div>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+            <h4 id="api-add"">Add a value</h4>
+            <p>Adds a value if it doesn't exist.  It returns a promise so you can check the returned
+					value to see whether the add succeeded.  If it succeeded, the promise resolves with
+					the value returned as data.  If an item with the same key already exists,
+					the promise is rejected.
+            </p>
+            <pre><code>settings.add("FavouriteColour", "blue");
+settings.add("FavouriteColour", "red");
+// Favourite colour is blue, adding a second value does not overwrite the first one</code></pre>
+            <p><button id="try-add" class="btn btn-success">Try it</button><i class="try-done fa fa-check-square fa-lg"></i></p>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
 
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+            <h4 id="api-update">Update a value</h4>
+            <p>Update a value if it already exists.  It returns a promise, so you can check the return value
+					to see whether the update succeeded.  If it succeeded, the promise resolves with the value
+					returned as data.   If the item doesn't exist in the store,
+					the promise is rejected.
+            </p>
+            <pre><code>settings.add("FavouriteColour", "blue");
+settings.update("FavouriteColour", "red");
+// Favourite colour is now updated to red
+settings.update("YearsOfExperience", 2);
+// YearsOfExperience is not saved because it was not previously added</code></pre>
+            <p><button id="try-update" class="btn btn-success">Try it</button><i class="try-done fa fa-check-square fa-lg"></i></p>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
 
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-        </section>
+            <h4 id="api-contains">Contains</h4>
+            <p>Returns true or false indicating whether an item with that key exists or not.</p>
+            <pre><code>settings.contains("FavouriteColour")
+	.then(function(itemExists) {
+		if (itemExists) {
+			$(".try-contains-message").html("FavouriteColour exists")
+		} else {
+			$(".try-contains-message").html("FavouriteColour does NOT exist")
+		}
+	});</code></pre>
+            <p><button id="try-contains" class="btn btn-success">Try it</button><i class="try-done fa fa-check-square fa-lg"></i></p>
+            <p class="try-contains-message"></p>
 
-        <footer>
-          Enduring Stash is maintained by <a href="https://github.com/sarahhenderson">sarahhenderson</a><br>
-          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
-        </footer>
 
-        
+
+            <h4 id="api-getall">GetAll</h4>
+            <p>Returns an array of ALL values in the stash. Well, technically it doesn't 'return' it.  The array of values
+		is available as a parameter in the success callback.  </a>.
+            </p>
+            <pre><code>settings.getAll()
+.then(function (result) {
+	$(".try-get-all-message").html(JSON.stringify(result));
+});</code></pre>
+            <p><button id="try-getAll" class="btn btn-success">Try it</button><i class="try-done fa fa-check-square fa-lg"></i></p>
+            <pre class="hidden"><code class="try-get-all-message"></code></pre>
+
+
+
+
+            <h4 id="api-remove">Remove</h4>
+            <p>Removes an item from the stash.</p>
+            <pre><code>settings.remove("FavouriteColour");
+settings.remove("FavouriteNumber")
+.then(function(){
+	console.log("FavouriteNumber removed");
+});</code></pre>
+            <p><button id="try-remove" class="btn btn-success">Try it</button><i class="try-done fa fa-check-square fa-lg"></i></p>
+
+
+
+            <h4 id="api-removeall">RemoveAll</h4>
+            <p>Clears out everything in the stash.</p>
+            <pre><code>settings.removeAll();
+person.removeAll()
+.then(function () {
+	console.log("Stash emptied");
+});</code></pre>
+            <p><button id="try-contains" class="btn btn-success">Try it</button><i class="try-done fa fa-check-square fa-lg"></i></p>
+
+
+         </section>
+
+
+
+         <section id="rationale">
+            <h2>Rationale</h2>
+            <p>Does the world really need another client-side persistence library?</p>
+            <p>Probably not. But I did.  Don't get me wrong - there are plenty of good ones out there. If nosql is your thing, try
+               <a href="http://brian.io/lawnchair">lawnchair</a>.  If you need something a bit more industrial-strength,
+      give <a href="http://jaydata.org">JayData</a> or <a href="http://breezejs.com">Breeze.js</a> a try.  Or look around on
+               <a href="http://github.com">GitHub</a>, there are plenty of them.
+            </p>
+            <p>None of them quite did what I needed in a couple of projects, though, so I peekend into their
+      their source code and came up with my own blend that suited exactly what I needed.  Maybe it will work for you too.
+            </p>
+         </section>
+
+         <section id="licence">
+            <h2>Licence</h2>
+            <p>This project is open source, licenced under GPL v2.</p>
+         </section>
+
+         <section id="author">
+            <h2>Author</h2>
+            <p>This project is maintained by <a href="http://sarahhenderson.info">Sarah Henderson</a>.</p>
+         </section>
+
       </div>
-    </div>
-  </body>
+
+      <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+      <script src="js/prism.js"></script>
+      <script src="lib/q/q.min.js"></script>
+      <script src="dist/enduring-stash.min.js"></script>
+      <script src="dist/WebStorage.provider.min.js"></script>
+      <script src="dist/Cookie.provider.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+      <script src="demo.js"></script>
+
+   </body>
 </html>

@@ -1,0 +1,11 @@
+/* CSS Document */
+
+body {padding-top: 40px; font: 20px "Open Sans", Corbel, Calibri, Verdana, Tahoma, Geneva, sans-serif; }
+section h2 {padding-top: 60px;}
+section h4 {padding-top: 60px;}
+pre code { font-size:  1.3em;}
+.try-done { color:  green; margin-left:  0.3em; display:  none;}
+.navbar-nav>li>a.nav-item-api {margin-right:  0; padding-right:  0;}
+.affix,.navbar-fixed-top{
+-webkit-transform: scale3d(1,1,1);
+}
