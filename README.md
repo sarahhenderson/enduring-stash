@@ -19,9 +19,11 @@ Just include the storage providers you'd like to use (in order of preference), a
 1. Include enduring-stash.js
 1. Include the storage providers you want to use.  Enduring Stash will select the first supported provider it finds, so the order matters.
 
-	&lt;script src="q.min.js"&gt;&lt;/script&gt;
-	&lt;script src="enduring-stash.min.js"&gt;&lt;/script&gt;
-	&lt;script src="WebStorage.provider.js"&gt;&lt;/script&gt;
+```html
+&lt;script src="q.min.js"&gt;&lt;/script&gt;
+&lt;script src="enduring-stash.min.js"&gt;&lt;/script&gt;
+&lt;script src="WebStorage.provider.js"&gt;&lt;/script&gt;
+````
     
 ## Create a new Enduring Stash:
 
@@ -33,15 +35,17 @@ Or, create a new named Enduring Stash:
 
 ## API
 
-If you want to try these samples in your browser, visit the demo site: 
+If you want to try these samples in your browser, visit the demo site: http://sarahhenderson.github.io/enduring-stash/
 
 #### Set a value
 
 Set adds a value if it doesn't exist, updates it if it does
 
-	settings.set("Username", username);
-	var person = { name: "Pat Lee", id: "PL001" };
-	people.set(person.id, person);
+```javascript
+settings.set("Username", username);
+var person = { name: "Pat Lee", id: "PL001" };
+people.set(person.id, person);
+```
 
 #### Get a value
 
@@ -103,10 +107,12 @@ Removes an item from the stash.
 
 Clears out everything in the stash.
 
+```javascript
 settings.removeAll();
-	.then(function(){
-		// optional action
-	});
+.then(function(){
+	// optional action
+});
+```
 
 ## Licence
 
@@ -114,4 +120,4 @@ This project is open source, licenced under GPL v2.
 
 ## Author
 
-This project is maintained by Sarah Henderson.
+This project is maintained by [Sarah Henderson](http://sarahhenderson.info).
