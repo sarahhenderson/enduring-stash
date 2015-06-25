@@ -3,6 +3,10 @@ enduring-stash
 
 Simple client-side persistence with a lightweight, promise-based API and multiple storage providers.
 
+**Don't use this**
+
+I wrote this before I knew about [local-forage](https://github.com/mozilla/localForage).  Use it instead.
+
 Currently supported storage providers are:
 
 * LocalStorage
